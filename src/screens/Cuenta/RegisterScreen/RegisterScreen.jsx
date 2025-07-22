@@ -1,21 +1,29 @@
-import React from "react";
-import { View } from "react-native";
-import { Image } from "react-native-elements";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { RegisterForm } from "../../../components/Auth/RegisterForm/RegisterForm";
-import { styles } from "./RegisterScreen.styles";
+import { SafeAreaView, View, Dimensions } from 'react-native';
+import { ImageBackground } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { RegisterForm } from '../../../components/Auth/RegisterForm/RegisterForm';
+import { styles } from './RegisterScreen.styles';
+
+const { width } = Dimensions.get('window');
 
 export function RegisterScreen() {
   return (
-    // Sirve para que el teclado no tape los inputs
-    <KeyboardAwareScrollView>
-      <Image
-        source={require("../../../../assets/login/imagen-login.png")}
-        style={styles.image}
-      />
-      <View style={styles.content}>
+    <SafeAreaView style={styles.safeArea}>
+      <ImageBackground
+        source={require('../../../../assets/login/imagen-login.png')}
+        style={styles.headerImage}
+        PlaceholderContent={null}
+      >
+        <View style={styles.overlay} />
+      </ImageBackground>
+
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.formContainer}
+        enableOnAndroid
+        extraScrollHeight={20}
+      >
         <RegisterForm />
-      </View>
-    </KeyboardAwareScrollView>
+      </KeyboardAwareScrollView>
+    </SafeAreaView>
   );
 }

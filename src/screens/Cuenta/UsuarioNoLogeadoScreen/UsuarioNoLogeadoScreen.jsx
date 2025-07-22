@@ -20,7 +20,7 @@ export function UsuarioNoLogeadoScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <Card containerStyle={styles.card}> 
           <Image
-            source={require('../../../../assets/user-guest/user-guest.jpg')}
+            source={require('../../../../assets/user-guest/user-guest.png')}
             style={styles.image}
             PlaceholderContent={<Text>Cargando...</Text>}
           />
