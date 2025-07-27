@@ -1,34 +1,42 @@
-import { View, ScrollView } from "react-native";
-import { Text, Image } from "react-native-elements";
-import { useNavigation } from "@react-navigation/native";
-// import { LoginForm } from "../../../components/Auth/LoginForm/LoginForm";
-import { screen } from "../../../utils";
-import { styles } from "./LoginScreen.styles";
+import React from 'react';
+import { SafeAreaView, View, Text, Dimensions } from 'react-native';
+import { ImageBackground } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { LoginForm } from '../../../components/Auth/LoginForm/LoginForm';
+import { useNavigation } from '@react-navigation/native';
+import { screen } from '../../../utils';
+import { styles } from './LoginScreen.styles';
+
+const { width, height } = Dimensions.get('window');
 
 export function LoginScreen() {
   const navigation = useNavigation();
-
-  // Función para navegar a la pantalla de registro
-  const goToRegister = () => {
-    navigation.navigate(screen.cuenta.register);
-  };
+  const goToRegister = () => navigation.navigate(screen.cuenta.register);
 
   return (
-    <ScrollView>
-      <Image
-        source={require("../../../../assets/login/imagen-login.png")}
-        style={styles.image}
-      />
-      <View style={styles.content}>
-        {/* <LoginForm /> */}
+    <SafeAreaView style={styles.safeArea}>
+      <ImageBackground
+        source={require('../../../../assets/login/imagen-login.png')}
+        style={styles.headerImage}
+        PlaceholderContent={null}
+      >
+        <View style={styles.overlay} />
+      </ImageBackground>
+
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.container}
+        enableOnAndroid
+        extraScrollHeight={20}
+      >
+        <LoginForm />
 
         <Text style={styles.textRegister}>
-          ¿Aún no tienes cuenta{" "}
+          ¿Aún no tienes cuenta?{' '}
           <Text style={styles.btnRegister} onPress={goToRegister}>
-            Regístrarse
+            Regístrate
           </Text>
         </Text>
-      </View>
-    </ScrollView>
+      </KeyboardAwareScrollView>
+    </SafeAreaView>
   );
 }

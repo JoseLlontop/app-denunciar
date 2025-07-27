@@ -7,6 +7,7 @@ import { useNavigation } from "@react-navigation/native";
 import { screen } from "../../../utils";
 import { initialValues, validationSchema } from "./RegisterForm.data";
 import { styles } from "./RegisterForm.styles";
+import Toast from "react-native-toast-message";
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +23,11 @@ export function RegisterForm() {
         await createUserWithEmailAndPassword(auth, formValue.email, formValue.password);
         navigation.navigate(screen.cuenta.cuenta);
       } catch (error) {
-        // handle error
+        Toast.show({
+          type: "error",
+          position: "bottom",
+          text1: "Error al registrarse, intentalo mas tarde",
+        });
       }
     },
   });
@@ -36,7 +41,9 @@ export function RegisterForm() {
     >
       <ScrollView keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          <Text style={{ fontSize: 24, fontWeight: "700", marginBottom: 8 }}>Crear cuenta</Text>
+          <Text style={{ fontSize: 24, fontWeight: "700", marginBottom: 8, textAlign: "center" }}>
+            Crear Cuenta
+          </Text>
 
           <Input
             placeholder="Correo electrónico"

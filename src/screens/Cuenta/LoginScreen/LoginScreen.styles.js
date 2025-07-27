@@ -1,21 +1,35 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
-  image: {
-    resizeMode: "contain",
-    width: "100%",
-    height: 150,
-    marginTop: 20,
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f2f2f2',
   },
-  content: {
-    marginHorizontal: 40,
+  headerImage: {
+    width: width,
+    height: height * 0.26,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+  },
+  container: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    alignItems: 'center',
   },
   textRegister: {
-    marginTop: 15,
-    marginHorizontal: 10,
+    marginTop: 16,
+    fontSize: 14,
+    color: '#333',
   },
   btnRegister: {
-    color: "#00a680",
-    fontWeight: "bold",
+    color: '#00a680',
+    fontWeight: 'bold',
   },
 });
