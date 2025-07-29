@@ -1,34 +1,58 @@
-import { ScrollView } from "react-native";
-import { Text, Button, Image } from "react-native-elements";
-import { useNavigation } from "@react-navigation/native";
-import { screen } from "../../../utils";
-import { styles } from "./UsuarioLogeadoScreen.styles";
+import React from 'react';
+import { SafeAreaView, ScrollView, View, Dimensions } from 'react-native';
+import { Text, Button, Image, Card } from 'react-native-elements';
+import { useNavigation } from '@react-navigation/native';
+import { screen } from '../../../utils';
+import { styles } from './UsuarioLogeadoScreen.styles';
+
+const { width } = Dimensions.get('window');
 
 export function UsuarioLogeadoScreen() {
   const navigation = useNavigation();
 
-  const goToLogin = () => {
-    navigation.navigate(screen.account.login);
+  const goToProfile = () => {
+    navigation.navigate(screen.cuenta.profile);
+  };
+
+  const logout = () => {
+    // Aquí pondrías tu lógica de cierre de sesión
+    navigation.navigate(screen.cuenta.login);
   };
 
   return (
-    <ScrollView centerContent={true} style={styles.content}>
-      <Image
-        //source={require("../../../../assets/img/user-guest.png")}
-        style={styles.image}
-      />
-      <Text style={styles.title}>Consultar tu perfil de 5 Tenedores</Text>
-      <Text style={styles.description}>
-        ¿Como describirías tu mejor restaurante? Busca y visualiza los mejores
-        restaurantes de una forma sencilla, vota cual te ha gustado más y
-        comenta como ha sito tu experiencia.
-      </Text>
-
-      <Button
-        title="Ver tu perfil"
-        onPress={goToLogin}
-        buttonStyle={styles.btnStyle}
-      />
-    </ScrollView>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Card containerStyle={styles.card}>
+          <Image
+            source={require('../../../../assets/user-guest/user.webp')}
+            containerStyle={styles.imageContainer}
+            style={styles.image}
+            PlaceholderContent={<Text>Cargando...</Text>}
+          />
+          <Text h4 style={styles.title}>
+            ¡Bienvenido de nuevo!
+          </Text>
+          <Text style={styles.description}>
+            Aquí puedes revisar tu información de usuario o cerrar sesión.
+          </Text>
+          <View style={styles.buttonRow}>
+            <Button
+              title="Ver perfil"
+              onPress={goToProfile}
+              buttonStyle={styles.btnPrimary}
+              containerStyle={styles.btnContainer}
+            />
+            <Button
+              title="Cerrar sesión"
+              onPress={logout}
+              type="outline"
+              titleStyle={styles.btnOutlineTitle}
+              buttonStyle={styles.btnOutline}
+              containerStyle={styles.btnContainer}
+            />
+          </View>
+        </Card>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
