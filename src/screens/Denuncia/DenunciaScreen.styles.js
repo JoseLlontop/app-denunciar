@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
   },
   // Estilos del ScrollView
   container: {
-    padding: 20,            // Espacio interno general
+    padding: 0,            // Espacio interno general
     alignItems: 'center',   // Centrar hijos horizontalmente
     backgroundColor: '#f2f2f2',
   },

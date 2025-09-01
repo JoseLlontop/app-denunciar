@@ -4,7 +4,7 @@ export const styles = StyleSheet.create({
   viewImage: {
     flexDirection: "row",
     marginHorizontal: 16,
-    marginTop: 18,
+    marginTop: 20,
   },
   scrollContent: {
     alignItems: "center",
@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
   /* Botón 'Agregar' */
   addWrapper: {
     alignItems: "center",
-    marginRight: 12,
+    marginLeft: 12,
   },
   addCircle: {
     width: 72,
