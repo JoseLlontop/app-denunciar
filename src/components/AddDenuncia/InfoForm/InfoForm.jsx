@@ -12,56 +12,10 @@ export function InfoForm({ formik }) {
 
   return (
     <Card containerStyle={styles.card}>
-      {/* Sección: Datos personales del usuario */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Tus Datos</Text>
-        {/* Input: Nombre */}
-        <Input
-          placeholder="Nombre"
-          // estilos del contenedor interno del Input
-          inputContainerStyle={styles.inputContainer}
-          // estilos de margen y ancho
-          containerStyle={styles.inputWrapper}
-          rightIcon={<Icon name="account" type="material-community" color="#00a680" />}
-          onChangeText={text => formik.setFieldValue('firstName', text)}
-          errorMessage={formik.errors.firstName}
-          value={formik.values.firstName}
-        />
-        {/* Input: Apellido */}
-        <Input
-          placeholder="Apellido"
-          inputContainerStyle={styles.inputContainer}
-          containerStyle={styles.inputWrapper}
-          onChangeText={text => formik.setFieldValue('lastName', text)}
-          errorMessage={formik.errors.lastName}
-          value={formik.values.lastName}
-        />
-        {/* Fila de Inputs: DNI y Teléfono */}
-        <View style={styles.rowInputs}>
-          <Input
-            placeholder="DNI"
-            keyboardType="numeric"
-            inputContainerStyle={styles.inputContainer}
-            containerStyle={[styles.inputWrapper, styles.halfWidth]}
-            onChangeText={text => formik.setFieldValue('dni', text)}
-            errorMessage={formik.errors.dni}
-            value={formik.values.dni}
-          />
-          <Input
-            placeholder="Teléfono"
-            keyboardType="phone-pad"
-            inputContainerStyle={styles.inputContainer}
-            containerStyle={[styles.inputWrapper, styles.halfWidth]}
-            onChangeText={text => formik.setFieldValue('phone', text)}
-            errorMessage={formik.errors.phone}
-            value={formik.values.phone}
-          />
-        </View>
-      </View>
 
       {/* Sección: Detalles de la incidencia */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Detalles de la Incidencia</Text>
+        <Text style={styles.sectionTitle}>Detalles de la Denuncia</Text>
         {/* Input: Título breve */}
         <Input
           placeholder="Título breve"

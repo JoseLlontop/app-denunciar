@@ -6,7 +6,7 @@ export const styles = StyleSheet.create({
   card: {
     borderRadius: 8,
     padding: 16,
-    margin: 16,
+    margin: 10,
     backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -22,8 +22,9 @@ export const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: 32,
     color: '#333',
+    paddingRight: 64,
   },
 
   inputContainer: {
@@ -32,7 +33,7 @@ export const styles = StyleSheet.create({
   },
 
   inputWrapper: {
-    marginBottom: 16,
+    marginBottom: 0,
     width: '100%',
   },
 
