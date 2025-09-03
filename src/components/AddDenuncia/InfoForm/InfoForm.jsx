@@ -42,11 +42,10 @@ export function InfoForm({ formik }) {
             onValueChange={value => formik.setFieldValue('category', value)}
             style={styles.picker}
           >
-            <Picker.Item label="Seleccione categoría" value="" />
+            <Picker.Item label="Seleccione Categoría" value="" />
             <Picker.Item label="Bache" value="bache" />
             <Picker.Item label="Luminaria" value="luminaria" />
-            <Picker.Item label="Limpieza urbana" value="limpieza" />
-            <Picker.Item label="Grafiti" value="grafiti" />
+            <Picker.Item label="Riesgo Eléctrico" value="riesgo electrico" />
           </Picker>
           {/* Mensaje de error para categoría */}
           {formik.errors.category && <Text style={styles.error}>{formik.errors.category}</Text>}
