@@ -1,58 +1,75 @@
-import React from 'react';
-import { SafeAreaView, ScrollView, View, Dimensions } from 'react-native';
-import { Text, Button, Image, Card } from 'react-native-elements';
-import { useNavigation } from '@react-navigation/native';
-import { screen } from '../../../utils';
-import { styles } from './UsuarioLogeadoScreen.styles';
+import React, { useState } from "react";
+import { SafeAreaView, ScrollView, View, Alert } from "react-native";
+import { Button, Card } from "react-native-elements";
+import { getAuth, signOut } from "firebase/auth";
+import { LoadingModal } from "../../../components";
+import { InfoUser, AccountOptions } from "../../../components/Account";
+import { styles } from "./UserLoggedScreen.styles";
 
-const { width } = Dimensions.get('window');
+export function UserLoggedScreen() {
+  const [loading, setLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState("");
+  const [_, setReload] = useState(false);
 
-export function UsuarioLogeadoScreen() {
-  const navigation = useNavigation();
+  const onReload = () => setReload((prevState) => !prevState);
 
-  const goToProfile = () => {
-    navigation.navigate(screen.cuenta.profile);
-  };
-
-  const logout = () => {
-    // Aquí pondrías tu lógica de cierre de sesión
-    navigation.navigate(screen.cuenta.login);
+  const logout = async () => {
+    // Confirmación antes de cerrar sesión
+    Alert.alert(
+      "Cerrar sesión",
+      "¿Estás seguro que querés cerrar sesión?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Cerrar sesión",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoadingText("Cerrando sesión...");
+              setLoading(true);
+              const auth = getAuth();
+              await signOut(auth);
+              // no hacemos navigation aquí, el flujo de autenticación debería redirigir
+            } catch (error) {
+              console.log("Logout error:", error);
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Card containerStyle={styles.card}>
-          <Image
-            source={require('../../../../assets/user-guest/user.webp')}
-            containerStyle={styles.imageContainer}
-            style={styles.image}
-            PlaceholderContent={<Text>Cargando...</Text>}
-          />
-          <Text h4 style={styles.title}>
-            ¡Bienvenido de nuevo!
-          </Text>
-          <Text style={styles.description}>
-            Aquí puedes revisar tu información de usuario o cerrar sesión.
-          </Text>
-          <View style={styles.buttonRow}>
-            <Button
-              title="Ver perfil"
-              onPress={goToProfile}
-              buttonStyle={styles.btnPrimary}
-              containerStyle={styles.btnContainer}
-            />
-            <Button
-              title="Cerrar sesión"
-              onPress={logout}
-              type="outline"
-              titleStyle={styles.btnOutlineTitle}
-              buttonStyle={styles.btnOutline}
-              containerStyle={styles.btnContainer}
-            />
-          </View>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Información del usuario (avatar, nombre, email) */}
+        <InfoUser setLoading={setLoading} setLoadingText={setLoadingText} />
+
+        {/* Opciones de cuenta (lista de settings / acciones) */}
+        <Card containerStyle={styles.cardOptions}>
+          <AccountOptions onReload={onReload} />
         </Card>
+
+        {/* Zona del botón de Cerrar sesión: ocupa el ancho y visualmente separada */}
+        <View style={styles.logoutWrapper}>
+          <Button
+            title="Cerrar sesión"
+            onPress={logout}
+            containerStyle={styles.btnContainer}
+            buttonStyle={styles.btnStyles}
+            titleStyle={styles.btnTextStyle}
+          />
+        </View>
       </ScrollView>
+
+      {/* Modal de carga global usado por InfoUser (subida avatar, etc.) */}
+      <LoadingModal show={loading} text={loadingText} />
     </SafeAreaView>
   );
 }
