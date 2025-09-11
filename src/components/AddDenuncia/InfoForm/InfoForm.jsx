@@ -44,8 +44,10 @@ export function InfoForm({ formik }) {
           >
             <Picker.Item label="Seleccione Categoría" value="" />
             <Picker.Item label="Bache" value="bache" />
-            <Picker.Item label="Luminaria" value="luminaria" />
-            <Picker.Item label="Riesgo Eléctrico" value="riesgo electrico" />
+            <Picker.Item label="Alumbrado" value="alumbrado" />
+            <Picker.Item label="Residuos" value="residuos" />
+            <Picker.Item label="Seguridad" value="seguridad" />
+            <Picker.Item label="Otros" value="otros" />
           </Picker>
           {/* Mensaje de error para categoría */}
           {formik.errors.category && <Text style={styles.error}>{formik.errors.category}</Text>}
