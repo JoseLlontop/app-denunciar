@@ -8,8 +8,11 @@ import { styles } from "./InfoUser.styles";
  
 export function InfoUser(props) {
   const { setLoading, setLoadingText } = props;
-  // Datos del usuario autenticado
-  const { uid, photoURL, displayName, email } = getAuth().currentUser;
+  // Datos del usuario autenticado con imagen
+  //const { uid, photoURL, displayName, email } = getAuth().currentUser;
+
+  // Datos del usuario autenticado sin imagen
+  const { photoURL, displayName, email } = getAuth().currentUser;
   const [avatar, setAvatar] = useState(photoURL);
 
   // Abre la galería para elegir imagen

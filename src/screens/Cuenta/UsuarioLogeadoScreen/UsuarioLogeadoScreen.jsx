@@ -4,9 +4,9 @@ import { Button, Card } from "react-native-elements";
 import { getAuth, signOut } from "firebase/auth";
 import { LoadingModal } from "../../../components";
 import { InfoUser, AccountOptions } from "../../../components/Account";
-import { styles } from "./UserLoggedScreen.styles";
+import { styles } from "./UsuarioLogeadoScreen.styles";
 
-export function UserLoggedScreen() {
+export function UsuarioLogeadoScreen() {
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
   const [_, setReload] = useState(false);

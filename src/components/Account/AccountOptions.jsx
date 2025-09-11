@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { ListItem, Icon } from "react-native-elements";
 import { map } from "lodash";
@@ -7,6 +7,17 @@ import { ChangeDisplayNameForm } from "./ChangeDisplayNameForm";
 import { ChangeEmailForm } from "./ChangeEmailForm";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 import { styles } from "./AccountOptions.styles";
+
+console.log("AccountOptions imports:", {
+  ListItem,
+  Icon,
+  map,
+  Modal,
+  ChangeDisplayNameForm,
+  ChangeEmailForm,
+  ChangePasswordForm,
+  styles
+});
 
 export function AccountOptions(props) {
   const { onReload } = props;
