@@ -20,7 +20,7 @@ export const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 12,
     alignItems: 'center',
   },
   textRegister: {

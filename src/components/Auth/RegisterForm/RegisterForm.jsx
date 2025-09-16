@@ -41,7 +41,7 @@ export function RegisterForm() {
     >
       <ScrollView keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          <Text style={{ fontSize: 24, fontWeight: "700", marginBottom: 8, textAlign: "center" }}>
+          <Text style={{ fontSize: 24, fontWeight: "700", marginBottom: 10, textAlign: "center", padding:4 }}>
             Crear Cuenta
           </Text>
 

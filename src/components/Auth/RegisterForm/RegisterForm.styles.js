@@ -16,8 +16,8 @@ export const styles = StyleSheet.create({
     marginVertical: 16,           // Menos margen alrededor del form
   },
   input: {
-    marginTop: 14,                 // Espacio reducido entre inputs
-    marginBottom: -6,               // Espacio reducido entre inputs
+    marginTop: 12,                 // Espacio reducido entre inputs
+    marginBottom: -10,               // Espacio reducido entre inputs
   },
   inputContainer: {
     backgroundColor: '#f5f6fa',

@@ -36,7 +36,7 @@ export function LoginForm() {
   return (
     <Card containerStyle={styles.card}>
       <View style={styles.content}>
-        <Text style={{ fontSize: 24, fontWeight: "700", marginBottom: 10, textAlign: "center" }}>
+        <Text style={{ fontSize: 24, fontWeight: "700", marginBottom: 10, textAlign: "center", padding:4 }}>
         Iniciar Sesión
       </Text>
         <Input
