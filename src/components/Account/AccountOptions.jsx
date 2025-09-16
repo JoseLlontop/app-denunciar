@@ -1,23 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { View } from "react-native";
 import { ListItem, Icon } from "react-native-elements";
-import { map } from "lodash";
 import { Modal } from "..";
 import { ChangeDisplayNameForm } from "./ChangeDisplayNameForm";
 import { ChangeEmailForm } from "./ChangeEmailForm";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 import { styles } from "./AccountOptions.styles";
-
-console.log("AccountOptions imports:", {
-  ListItem,
-  Icon,
-  map,
-  Modal,
-  ChangeDisplayNameForm,
-  ChangeEmailForm,
-  ChangePasswordForm,
-  styles
-});
 
 export function AccountOptions(props) {
   const { onReload } = props;
@@ -25,44 +13,55 @@ export function AccountOptions(props) {
   const [showModal, setShowModal] = useState(false);
   const [renderComponent, setRenderComponent] = useState(null);
 
-  const onCloseOpenModal = () => setShowModal((prevState) => !prevState);
+  const onCloseModal = () => {
+    setShowModal(false);
+    setRenderComponent(null);
+  };
 
   const selectedComponent = (key) => {
-    if (key === "displayName") {
-      setRenderComponent(
-        <ChangeDisplayNameForm onClose={onCloseOpenModal} onReload={onReload} />
-      );
-    }
+    setShowModal(true);
+    setRenderComponent(key);
+  };
 
-    if (key === "email") {
-      setRenderComponent(
-        <ChangeEmailForm onClose={onCloseOpenModal} onReload={onReload} />
-      );
+  const renderSelectedComponent = (key) => {
+    switch (key) {
+      case "displayName":
+        return (
+          <ChangeDisplayNameForm
+            onClose={onCloseModal}
+            onReload={onReload}
+          />
+        );
+      case "email":
+        return (
+          <ChangeEmailForm
+            onClose={onCloseModal}
+            onReload={onReload}
+          />
+        );
+      case "password":
+        return <ChangePasswordForm onClose={onCloseModal} />;
+      default:
+        return null;
     }
-
-    if (key === "password") {
-      setRenderComponent(<ChangePasswordForm onClose={onCloseOpenModal} />);
-    }
-
-    // Abrir modal para el componente seleccionado
-    onCloseOpenModal();
   };
 
   const menuOptions = getMenuOptions(selectedComponent);
 
   return (
     <View style={styles.container}>
-      {map(menuOptions, (menu) => (
+      {menuOptions.map((menu) => (
         <ListItem
-          key={menu.title}
+          key={menu.id}
           containerStyle={styles.listItem}
           bottomDivider
           onPress={menu.onPress}
           accessibilityRole="button"
           accessibilityLabel={menu.title}
         >
-          {/* Ícono izquierdo (más suave) */}
+          {/* <-- keys en cada hijo directo del ListItem --> */}
           <Icon
+            key={`leftIcon-${menu.id}`}
             type={menu.iconType}
             name={menu.iconNameLeft}
             color={menu.iconColorLeft}
@@ -70,17 +69,22 @@ export function AccountOptions(props) {
             containerStyle={styles.iconLeft}
           />
 
-          <ListItem.Content>
-            <ListItem.Title style={styles.title}>{menu.title}</ListItem.Title>
+          <ListItem.Content key={`content-${menu.id}`}>
+            <ListItem.Title style={styles.title}>
+              {menu.title}
+            </ListItem.Title>
           </ListItem.Content>
 
-          {/* Chevrom a la derecha para indicar acción */}
-          <ListItem.Chevron color={menu.iconColorRight} />
+          <ListItem.Chevron
+            key={`chevron-${menu.id}`}
+            color={menu.iconColorRight}
+            name={menu.iconNameRight}
+          />
         </ListItem>
       ))}
 
-      <Modal show={showModal} close={onCloseOpenModal}>
-        {renderComponent}
+      <Modal show={showModal} close={onCloseModal}>
+        {renderSelectedComponent(renderComponent)}
       </Modal>
     </View>
   );
@@ -89,6 +93,7 @@ export function AccountOptions(props) {
 function getMenuOptions(selectedComponent) {
   return [
     {
+      id: "displayName",
       title: "Cambiar Nombre y Apellidos",
       iconType: "material-community",
       iconNameLeft: "account-circle",
@@ -98,6 +103,7 @@ function getMenuOptions(selectedComponent) {
       onPress: () => selectedComponent("displayName"),
     },
     {
+      id: "email",
       title: "Cambiar Email",
       iconType: "material-community",
       iconNameLeft: "at",
@@ -107,6 +113,7 @@ function getMenuOptions(selectedComponent) {
       onPress: () => selectedComponent("email"),
     },
     {
+      id: "password",
       title: "Cambiar contraseña",
       iconType: "material-community",
       iconNameLeft: "lock-reset",
@@ -117,3 +124,5 @@ function getMenuOptions(selectedComponent) {
     },
   ];
 }
+
+export default AccountOptions;
