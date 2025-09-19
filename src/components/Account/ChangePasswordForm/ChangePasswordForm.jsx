@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { View } from "react-native";
-import { Input, Button, Text } from "react-native-elements";
+import { View, TouchableOpacity, ActivityIndicator, Text as RNText } from "react-native";
+import { Input, Text, Icon } from "react-native-elements";
 import { useFormik } from "formik";
 import {
   getAuth,
@@ -12,11 +12,9 @@ import Toast from "react-native-toast-message";
 import { initialValues, validationSchema } from "./ChangePasswordForm.data";
 import { styles } from "./ChangePasswordForm.styles";
 
-export function ChangePasswordForm(props) {
-  const { onClose } = props;
+export function ChangePasswordForm({ onClose }) {
   const [showPassword, setShowPassword] = useState(false);
-
-  const onShowPassword = () => setShowPassword((prevState) => !prevState);
+  const onShowPassword = () => setShowPassword((prev) => !prev);
 
   const formik = useFormik({
     initialValues: initialValues(),
@@ -25,21 +23,14 @@ export function ChangePasswordForm(props) {
     onSubmit: async (formValue) => {
       try {
         const currentUser = getAuth().currentUser;
-
         const credentials = EmailAuthProvider.credential(
           currentUser.email,
           formValue.password
         );
-
-        // Reautenticar al usuario (await para esperar la operación)
         await reauthenticateWithCredential(currentUser, credentials);
-
-        // Actualizar contraseña
         await updatePassword(currentUser, formValue.newPassword);
-
-        // Cerrar modal al completar
-        onClose();
-      } catch (error) {
+        onClose?.();
+      } catch {
         Toast.show({
           type: "error",
           position: "bottom",
@@ -49,78 +40,76 @@ export function ChangePasswordForm(props) {
     },
   });
 
+  const EyeIcon = (k) => (
+    <Icon
+      key={k}
+      type="material-community"
+      name={showPassword ? "eye-off-outline" : "eye-outline"}
+      color="#c2c2c2"
+      onPress={onShowPassword}
+    />
+  );
+
   return (
     <View style={styles.content}>
-      {/* Título del modal/section */}
-      <Text h4 style={styles.title}>
+      <Text key="title" h4 style={styles.title}>
         Cambiar contraseña
       </Text>
 
-      {/* Contraseña actual */}
       <Input
+        key="current-password"
         placeholder="Contraseña actual"
         containerStyle={styles.inputWrapper}
         inputContainerStyle={styles.inputContainer}
         inputStyle={styles.input}
         secureTextEntry={!showPassword}
-        rightIcon={{
-          type: "material-community",
-          name: showPassword ? "eye-off-outline" : "eye-outline",
-          color: "#c2c2c2",
-          onPress: onShowPassword,
-        }}
-        onChangeText={(text) => formik.setFieldValue("password", text)}
+        rightIcon={EyeIcon("eye-current")}
+        onChangeText={(t) => formik.setFieldValue("password", t)}
         errorMessage={formik.errors.password}
         errorStyle={styles.error}
       />
 
-      {/* Nueva contraseña */}
       <Input
+        key="new-password"
         placeholder="Nueva contraseña"
         containerStyle={styles.inputWrapper}
         inputContainerStyle={styles.inputContainer}
         inputStyle={styles.input}
         secureTextEntry={!showPassword}
-        rightIcon={{
-          type: "material-community",
-          name: showPassword ? "eye-off-outline" : "eye-outline",
-          color: "#c2c2c2",
-          onPress: onShowPassword,
-        }}
-        onChangeText={(text) => formik.setFieldValue("newPassword", text)}
+        rightIcon={EyeIcon("eye-new")}
+        onChangeText={(t) => formik.setFieldValue("newPassword", t)}
         errorMessage={formik.errors.newPassword}
         errorStyle={styles.error}
       />
 
-      {/* Repetir nueva contraseña */}
       <Input
+        key="confirm-password"
         placeholder="Repite nueva contraseña"
         containerStyle={styles.inputWrapper}
         inputContainerStyle={styles.inputContainer}
         inputStyle={styles.input}
         secureTextEntry={!showPassword}
-        rightIcon={{
-          type: "material-community",
-          name: showPassword ? "eye-off-outline" : "eye-outline",
-          color: "#c2c2c2",
-          onPress: onShowPassword,
-        }}
-        onChangeText={(text) =>
-          formik.setFieldValue("confirmNewPassword", text)
-        }
+        rightIcon={EyeIcon("eye-confirm")}
+        onChangeText={(t) => formik.setFieldValue("confirmNewPassword", t)}
         errorMessage={formik.errors.confirmNewPassword}
         errorStyle={styles.error}
       />
 
-      {/* Botón: ancho completo dentro del modal */}
-      <Button
-        title="Cambiar contraseña"
-        containerStyle={styles.btnContainer}
-        buttonStyle={styles.btn}
-        titleStyle={styles.btnTitle}
-        onPress={formik.handleSubmit}
-        loading={formik.isSubmitting}
-      />
+      <View style={styles.btnContainer}>
+        <TouchableOpacity
+          style={styles.btn}
+          onPress={formik.handleSubmit}
+          activeOpacity={0.8}
+          disabled={formik.isSubmitting}
+          accessibilityRole="button"
+        >
+          {formik.isSubmitting ? (
+            <ActivityIndicator />
+          ) : (
+            <RNText style={styles.btnTitle}>Cambiar contraseña</RNText>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

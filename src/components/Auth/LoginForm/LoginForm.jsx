@@ -22,7 +22,7 @@ export function LoginForm() {
       try {
         const auth = getAuth();
         await signInWithEmailAndPassword(auth, values.email, values.password);
-        navigation.navigate(screen.account.profile);
+        navigation.navigate(screen.cuenta.perfil);
       } catch {
         Toast.show({
           type: 'error',

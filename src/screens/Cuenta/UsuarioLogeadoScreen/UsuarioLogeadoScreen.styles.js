@@ -1,6 +1,8 @@
 import { StyleSheet, Dimensions, Platform } from "react-native";
 
 const { width } = Dimensions.get("window");
+const PRIMARY = "#00a680";
+const DANGER = "#e53935";
 
 export const styles = StyleSheet.create({
   safeArea: {
@@ -16,13 +18,13 @@ export const styles = StyleSheet.create({
     flexGrow: 1,
   },
 
-  // Card que envuelve las opciones de cuenta (coherente con otros cards)
+  // "Card" que envuelve las opciones de cuenta (View estilado)
   cardOptions: {
     width: width * 0.95,
+    backgroundColor: "#fff",      // ← para emular Card
     borderRadius: 12,
     paddingVertical: 8,
     paddingHorizontal: 8,
-    // sombra ligera
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -30,19 +32,19 @@ export const styles = StyleSheet.create({
     elevation: 3,
     marginTop: 10,
     marginBottom: 6,
+    borderWidth: 1,
+    borderColor: "#eee",
   },
 
-  // Wrapper del botón de logout: lo separa visualmente y mantiene consistencia de ancho
+  // Wrapper del botón de logout
   logoutWrapper: {
     width: width * 0.95,
     marginTop: 18,
     borderRadius: 12,
     overflow: "hidden",
-    // fondo blanco sutil para que el botón destaque si quieres un footer visible
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#eee",
-    // sombra pequeña para separar del fondo
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -56,17 +58,80 @@ export const styles = StyleSheet.create({
     }),
   },
 
-  // estilos del botón (se mantiene fondo blanco y texto en color primario para look "link")
-  btnContainer: {
-    width: "100%",
-  },
-  btnStyles: {
-    backgroundColor: "#fff", // fondo blanco (botón tipo fila)
+  // Botón personalizado (reemplaza RNE Button para evitar PadView)
+  btnTouchable: {
+    backgroundColor: "#fff",
     paddingVertical: 14,
-    borderRadius: 0, // el container tiene el borderRadius
+    alignItems: "center",
+    justifyContent: "center",
   },
   btnTextStyle: {
-    color: "#00a680", // color primario de la app
+    color: PRIMARY,
+    fontWeight: "700",
+    fontSize: 16,
+  },
+
+  /* ===== Modal de confirmación ===== */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 420,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 6,
+    color: "#111",
+  },
+  modalMessage: {
+    fontSize: 14,
+    color: "#444",
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 10, // RN 0.71+ soporta gap; si usás una versión anterior, avisame y lo cambio por márgenes
+  },
+  modalBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+  },
+  modalBtnSecondary: {
+    backgroundColor: "#f1f1f1",
+  },
+  modalBtnSecondaryText: {
+    color: "#222",
+    fontWeight: "600",
+  },
+  modalBtnDanger: {
+    backgroundColor: DANGER,
+  },
+  modalBtnDangerText: {
+    color: "#fff",
     fontWeight: "700",
   },
 });

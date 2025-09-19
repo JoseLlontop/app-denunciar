@@ -20,6 +20,7 @@ const cuentaStack = {
   cuenta: "Cuenta",
   login: "Login",
   register: "Register",
+  perfil: "Perfil",
 };
 
 export const screen = {

@@ -1,15 +1,13 @@
 import React, { useState } from "react";
-import { View } from "react-native";
-import { ListItem, Icon } from "react-native-elements";
-import { Modal } from "..";
+import { View, TouchableOpacity, Text } from "react-native";
+import { Modal } from "../Shared/Modal";
 import { ChangeDisplayNameForm } from "./ChangeDisplayNameForm";
 import { ChangeEmailForm } from "./ChangeEmailForm";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 import { styles } from "./AccountOptions.styles";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-export function AccountOptions(props) {
-  const { onReload } = props;
-
+export function AccountOptions({ onReload }) {
   const [showModal, setShowModal] = useState(false);
   const [renderComponent, setRenderComponent] = useState(null);
 
@@ -26,19 +24,9 @@ export function AccountOptions(props) {
   const renderSelectedComponent = (key) => {
     switch (key) {
       case "displayName":
-        return (
-          <ChangeDisplayNameForm
-            onClose={onCloseModal}
-            onReload={onReload}
-          />
-        );
+        return <ChangeDisplayNameForm onClose={onCloseModal} onReload={onReload} />;
       case "email":
-        return (
-          <ChangeEmailForm
-            onClose={onCloseModal}
-            onReload={onReload}
-          />
-        );
+        return <ChangeEmailForm onClose={onCloseModal} onReload={onReload} />;
       case "password":
         return <ChangePasswordForm onClose={onCloseModal} />;
       default:
@@ -51,36 +39,30 @@ export function AccountOptions(props) {
   return (
     <View style={styles.container}>
       {menuOptions.map((menu) => (
-        <ListItem
+        <TouchableOpacity
           key={menu.id}
-          containerStyle={styles.listItem}
-          bottomDivider
+          style={styles.listItem}
           onPress={menu.onPress}
+          activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel={menu.title}
         >
-          {/* <-- keys en cada hijo directo del ListItem --> */}
-          <Icon
-            key={`leftIcon-${menu.id}`}
-            type={menu.iconType}
-            name={menu.iconNameLeft}
-            color={menu.iconColorLeft}
+          <View style={styles.iconLeft}>
+            <MaterialCommunityIcons
+              name={menu.iconNameLeft}
+              size={22}
+              color={menu.iconColorLeft}
+            />
+          </View>
+
+          <Text style={styles.title}>{menu.title}</Text>
+
+          <MaterialCommunityIcons
+            name="chevron-right"
             size={22}
-            containerStyle={styles.iconLeft}
-          />
-
-          <ListItem.Content key={`content-${menu.id}`}>
-            <ListItem.Title style={styles.title}>
-              {menu.title}
-            </ListItem.Title>
-          </ListItem.Content>
-
-          <ListItem.Chevron
-            key={`chevron-${menu.id}`}
             color={menu.iconColorRight}
-            name={menu.iconNameRight}
           />
-        </ListItem>
+        </TouchableOpacity>
       ))}
 
       <Modal show={showModal} close={onCloseModal}>
@@ -95,34 +77,26 @@ function getMenuOptions(selectedComponent) {
     {
       id: "displayName",
       title: "Cambiar Nombre y Apellidos",
-      iconType: "material-community",
       iconNameLeft: "account-circle",
       iconColorLeft: "#9e9e9e",
-      iconNameRight: "chevron-right",
       iconColorRight: "#bdbdbd",
       onPress: () => selectedComponent("displayName"),
     },
     {
       id: "email",
       title: "Cambiar Email",
-      iconType: "material-community",
       iconNameLeft: "at",
       iconColorLeft: "#9e9e9e",
-      iconNameRight: "chevron-right",
       iconColorRight: "#bdbdbd",
       onPress: () => selectedComponent("email"),
     },
     {
       id: "password",
       title: "Cambiar contraseña",
-      iconType: "material-community",
       iconNameLeft: "lock-reset",
       iconColorLeft: "#9e9e9e",
-      iconNameRight: "chevron-right",
       iconColorRight: "#bdbdbd",
       onPress: () => selectedComponent("password"),
     },
   ];
 }
-
-export default AccountOptions;

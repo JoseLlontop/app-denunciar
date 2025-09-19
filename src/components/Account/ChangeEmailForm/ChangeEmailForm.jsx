@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { View } from "react-native";
-import { Input, Button, Text } from "react-native-elements";
+import { View, TouchableOpacity, ActivityIndicator, Text as RNText } from "react-native";
+import { Input, Text, Icon } from "react-native-elements";
 import { useFormik } from "formik";
 import {
   getAuth,
@@ -12,11 +12,9 @@ import Toast from "react-native-toast-message";
 import { initialValues, validationSchema } from "./ChangeEmailForm.data";
 import { styles } from "./ChangeEmailForm.styles";
 
-export function ChangeEmailForm(props) {
-  const { onClose, onReload } = props;
+export function ChangeEmailForm({ onClose, onReload }) {
   const [showPassword, setShowPassword] = useState(false);
-
-  const onShowPassword = () => setShowPassword((prevState) => !prevState);
+  const onShowPassword = () => setShowPassword((prev) => !prev);
 
   const formik = useFormik({
     initialValues: initialValues(),
@@ -25,21 +23,15 @@ export function ChangeEmailForm(props) {
     onSubmit: async (formValue) => {
       try {
         const currentUser = getAuth().currentUser;
-
         const credentials = EmailAuthProvider.credential(
           currentUser.email,
           formValue.password
         );
-        // Reautenticar al usuario con las credenciales ingresadas
         await reauthenticateWithCredential(currentUser, credentials);
-
-        // Actualizar email
         await updateEmail(currentUser, formValue.email);
-
-        // Refrescar datos en la UI y cerrar modal
-        onReload();
-        onClose();
-      } catch (error) {
+        onReload?.();
+        onClose?.();
+      } catch {
         Toast.show({
           type: "error",
           position: "bottom",
@@ -49,50 +41,63 @@ export function ChangeEmailForm(props) {
     },
   });
 
+  const EyeIcon = (k) => (
+    <Icon
+      key={k}
+      type="material-community"
+      name={showPassword ? "eye-off-outline" : "eye-outline"}
+      color="#c2c2c2"
+      onPress={onShowPassword}
+    />
+  );
+
   return (
     <View style={styles.content}>
-      {/* (Opcional) título pequeño para orientar */}
-      <Text h4 style={styles.title}>
+      <Text key="title" h4 style={styles.title}>
         Cambiar email
       </Text>
 
-      {/* Input: nuevo email */}
       <Input
+        key="email-input"
         placeholder="Nuevo email"
         placeholderTextColor="#9e9e9e"
         containerStyle={styles.inputWrapper}
         inputContainerStyle={styles.inputContainer}
         inputStyle={styles.input}
-        onChangeText={(text) => formik.setFieldValue("email", text)}
+        onChangeText={(t) => formik.setFieldValue("email", t)}
         errorMessage={formik.errors.email}
+        errorStyle={styles.error}
       />
 
-      {/* Input: contraseña (para reautenticación) */}
       <Input
+        key="password-input"
         placeholder="Contraseña"
         placeholderTextColor="#9e9e9e"
         containerStyle={styles.inputWrapper}
         inputContainerStyle={styles.inputContainer}
         inputStyle={styles.input}
         secureTextEntry={!showPassword}
-        rightIcon={{
-          type: "material-community",
-          name: showPassword ? "eye-off-outline" : "eye-outline",
-          color: "#c2c2c2",
-          onPress: onShowPassword,
-        }}
-        onChangeText={(text) => formik.setFieldValue("password", text)}
+        rightIcon={EyeIcon("eye-email")}
+        onChangeText={(t) => formik.setFieldValue("password", t)}
         errorMessage={formik.errors.password}
+        errorStyle={styles.error}
       />
 
-      {/* Botón para enviar */}
-      <Button
-        title="Cambiar email"
-        containerStyle={styles.btnContainer}
-        buttonStyle={styles.btn}
-        onPress={formik.handleSubmit}
-        loading={formik.isSubmitting}
-      />
+      <View style={styles.btnContainer}>
+        <TouchableOpacity
+          style={styles.btn}
+          onPress={formik.handleSubmit}
+          activeOpacity={0.8}
+          disabled={formik.isSubmitting}
+          accessibilityRole="button"
+        >
+          {formik.isSubmitting ? (
+            <ActivityIndicator />
+          ) : (
+            <RNText style={styles.btnTitle}>Cambiar email</RNText>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

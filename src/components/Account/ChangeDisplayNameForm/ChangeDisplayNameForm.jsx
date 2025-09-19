@@ -1,32 +1,24 @@
 import React from "react";
-import { View } from "react-native";
-import { Input, Button, Text } from "react-native-elements";
+import { View, TouchableOpacity, ActivityIndicator, Text as RNText } from "react-native";
+import { Input, Text, Icon } from "react-native-elements";
 import { useFormik } from "formik";
 import { getAuth, updateProfile } from "firebase/auth";
 import Toast from "react-native-toast-message";
 import { initialValues, validationSchema } from "./ChangeDisplayNameForm.data";
 import { styles } from "./ChangeDisplayNameForm.styles";
 
-export function ChangeDisplayNameForm(props) {
-  const { onClose, onReload } = props;
-
+export function ChangeDisplayNameForm({ onClose, onReload }) {
   const formik = useFormik({
-    // Valores iniciales del formulario
     initialValues: initialValues(),
-    // Validación con Yup
     validationSchema: validationSchema(),
     validateOnChange: false,
-    onSubmit: async (formValue) => {
+    onSubmit: async ({ displayName }) => {
       try {
-        const { displayName } = formValue;
-        // CurrentUser es el usuario autenticado actualmente
         const currentUser = getAuth().currentUser;
-        // Actualizar el perfil del usuario con el nuevo displayName
         await updateProfile(currentUser, { displayName });
-
-        onReload();
-        onClose();
-      } catch (error) {
+        onReload?.();
+        onClose?.();
+      } catch {
         Toast.show({
           type: "error",
           position: "bottom",
@@ -38,36 +30,44 @@ export function ChangeDisplayNameForm(props) {
 
   return (
     <View style={styles.content}>
-      {/* Título compacto para orientar al usuario */}
-      <Text h4 style={styles.title}>
+      <Text key="title" h4 style={styles.title}>
         Cambiar nombre y apellidos
       </Text>
 
       <Input
+        key="displayname-input"
         placeholder="Nombre y apellidos"
-        // icono derecho suave
-        rightIcon={{
-          type: "material-community",
-          name: "account-circle-outline",
-          color: "#9e9e9e",
-        }}
-        // estilo visual del input
+        rightIcon={
+          <Icon
+            key="acc-right"
+            type="material-community"
+            name="account-circle-outline"
+            color="#9e9e9e"
+          />
+        }
         inputContainerStyle={styles.inputContainer}
         inputStyle={styles.input}
         containerStyle={styles.inputWrapper}
         errorStyle={styles.error}
-        onChangeText={(text) => formik.setFieldValue("displayName", text)}
+        onChangeText={(t) => formik.setFieldValue("displayName", t)}
         errorMessage={formik.errors.displayName}
       />
 
-      <Button
-        title="Guardar cambios"
-        containerStyle={styles.btnContainer}
-        buttonStyle={styles.btn}
-        titleStyle={styles.btnTitle}
-        onPress={formik.handleSubmit}
-        loading={formik.isSubmitting}
-      />
+      <View style={styles.btnContainer}>
+        <TouchableOpacity
+          style={styles.btn}
+          onPress={formik.handleSubmit}
+          activeOpacity={0.8}
+          disabled={formik.isSubmitting}
+          accessibilityRole="button"
+        >
+          {formik.isSubmitting ? (
+            <ActivityIndicator />
+          ) : (
+            <RNText style={styles.btnTitle}>Guardar cambios</RNText>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

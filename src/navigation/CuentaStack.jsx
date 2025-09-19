@@ -5,6 +5,7 @@ import { CuentaScreen } from "../screens/Cuenta/CuentaScreen";
 import { LoginScreen } from "../screens/Cuenta/LoginScreen/LoginScreen";
 import { RegisterScreen } from "../screens/Cuenta/RegisterScreen/RegisterScreen";
 import { screen } from "../utils";
+import { UsuarioLogeadoScreen } from "../screens/Cuenta/UsuarioLogeadoScreen/UsuarioLogeadoScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +31,13 @@ export function CuentaStack() {
         name={screen.cuenta.register}
         component={RegisterScreen}
         options={{ title: "Crea tu cuenta",
+        headerTitleAlign: "center"
+        }}
+      />
+        <Stack.Screen
+        name={screen.cuenta.perfil}
+        component={UsuarioLogeadoScreen}
+        options={{ title: "Mi Perfil",
         headerTitleAlign: "center"
         }}
       />
