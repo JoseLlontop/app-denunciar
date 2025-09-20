@@ -46,12 +46,14 @@ export function UsuarioLogeadoScreen() {
           <AccountOptions onReload={onReload} />
         </View>
 
-        {/* Botón de Cerrar sesión (nativo, sin PadView) */}
+        {/* Botón de Cerrar sesión */}
         <View style={styles.logoutWrapper}>
           <TouchableOpacity
             style={styles.btnTouchable}
             activeOpacity={0.7}
             onPress={() => setConfirmVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar sesión"
           >
             <Text style={styles.btnTextStyle}>Cerrar sesión</Text>
           </TouchableOpacity>
@@ -69,24 +71,30 @@ export function UsuarioLogeadoScreen() {
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Cerrar sesión</Text>
             <Text style={styles.modalMessage}>
-              ¿Estás seguro de que querés cerrar sesión? 
+              ¿Estás seguro de que querés cerrar sesión?
             </Text>
 
             <View style={styles.modalActions}>
+              {/* Botón cancelar */}
               <TouchableOpacity
                 onPress={() => setConfirmVisible(false)}
-                style={[styles.modalBtn, styles.modalBtnSecondary]}
-                activeOpacity={0.8}
+                style={[styles.modalBtnContainer, styles.modalBtnContainerLeft]}
+                activeOpacity={0.85}
               >
-                <Text style={styles.modalBtnSecondaryText}>Cancelar</Text>
+                <View style={[styles.modalBtn, styles.modalBtnSecondary]}>
+                  <Text style={styles.modalBtnSecondaryText}>Cancelar</Text>
+                </View>
               </TouchableOpacity>
 
+              {/* Botón confirmar */}
               <TouchableOpacity
                 onPress={handleConfirmLogout}
-                style={[styles.modalBtn, styles.modalBtnDanger]}
-                activeOpacity={0.8}
+                style={[styles.modalBtnContainer, styles.modalBtnContainerRight]}
+                activeOpacity={0.85}
               >
-                <Text style={styles.modalBtnDangerText}>Cerrar sesión</Text>
+                <View style={[styles.modalBtn, styles.modalBtnDanger]}>
+                  <Text style={styles.modalBtnDangerText}>Cerrar sesión</Text>
+                </View>
               </TouchableOpacity>
             </View>
           </View>

@@ -88,7 +88,8 @@ export function InfoUser({ setLoading, setLoadingText }) {
           rounded
           containerStyle={styles.avatarContainer}
           avatarStyle={styles.avatarImage}
-          icon={{ type: "material", name: "person" }}
+          // no enviamos `source` aquí; dejamos que muestre el icon fallback
+          icon={{ type: "material-community", name: "account", color: "#666" }}
         />
         <View style={styles.textContainer}>
           <Text style={styles.displayName}>Invitado</Text>
@@ -107,8 +108,10 @@ export function InfoUser({ setLoading, setLoadingText }) {
           rounded
           containerStyle={styles.avatarContainer}
           avatarStyle={styles.avatarImage}
-          icon={{ type: "material", name: "person" }}
-          source={avatar ? { uri: avatar } : null}
+          // importante: NO pasar `source={null}`; usar undefined cuando no haya URL
+          source={avatar ? { uri: avatar } : undefined}
+          // icon como fallback si no hay imagen
+          icon={{ type: "material-community", name: "account", color: "#666" }}
         >
           <Avatar.Accessory size={26} onPress={changeAvatar} />
         </Avatar>

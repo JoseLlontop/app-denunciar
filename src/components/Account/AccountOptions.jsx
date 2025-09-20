@@ -4,8 +4,8 @@ import { Modal } from "../Shared/Modal";
 import { ChangeDisplayNameForm } from "./ChangeDisplayNameForm";
 import { ChangeEmailForm } from "./ChangeEmailForm";
 import { ChangePasswordForm } from "./ChangePasswordForm";
-import { styles } from "./AccountOptions.styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { styles } from "./AccountOptions.styles";
 
 export function AccountOptions({ onReload }) {
   const [showModal, setShowModal] = useState(false);
@@ -47,20 +47,28 @@ export function AccountOptions({ onReload }) {
           accessibilityRole="button"
           accessibilityLabel={menu.title}
         >
-          <View style={styles.iconLeft}>
+          {/* Icono izquierdo dentro de un círculo */}
+          <View style={styles.iconBox}>
             <MaterialCommunityIcons
               name={menu.iconNameLeft}
-              size={22}
+              size={20}
               color={menu.iconColorLeft}
             />
           </View>
 
-          <Text style={styles.title}>{menu.title}</Text>
+          {/* Título (ocupa el espacio disponible) */}
+          <View style={styles.textBox}>
+            <Text numberOfLines={1} style={styles.title}>
+              {menu.title}
+            </Text>
+          </View>
 
+          {/* Chevron derecho */}
           <MaterialCommunityIcons
             name="chevron-right"
-            size={22}
+            size={24}
             color={menu.iconColorRight}
+            style={styles.chevron}
           />
         </TouchableOpacity>
       ))}
@@ -78,7 +86,7 @@ function getMenuOptions(selectedComponent) {
       id: "displayName",
       title: "Cambiar Nombre y Apellidos",
       iconNameLeft: "account-circle",
-      iconColorLeft: "#9e9e9e",
+      iconColorLeft: "#00a680",
       iconColorRight: "#bdbdbd",
       onPress: () => selectedComponent("displayName"),
     },
@@ -86,7 +94,7 @@ function getMenuOptions(selectedComponent) {
       id: "email",
       title: "Cambiar Email",
       iconNameLeft: "at",
-      iconColorLeft: "#9e9e9e",
+      iconColorLeft: "#00a680",
       iconColorRight: "#bdbdbd",
       onPress: () => selectedComponent("email"),
     },
@@ -94,7 +102,7 @@ function getMenuOptions(selectedComponent) {
       id: "password",
       title: "Cambiar contraseña",
       iconNameLeft: "lock-reset",
-      iconColorLeft: "#9e9e9e",
+      iconColorLeft: "#00a680",
       iconColorRight: "#bdbdbd",
       onPress: () => selectedComponent("password"),
     },

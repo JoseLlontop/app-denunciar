@@ -5,7 +5,7 @@ const { width } = Dimensions.get("window");
 export const styles = StyleSheet.create({
   // Card contenedor para destacar la sección de usuario
   card: {
-    width: width * 0.95,           // ocupa 95% del ancho (centrado)
+    width: width * 0.95,
     backgroundColor: "#ffffff",
     borderRadius: 12,
     paddingVertical: 18,
@@ -25,7 +25,9 @@ export const styles = StyleSheet.create({
 
   // Contenedor del avatar para dar borde y sombra
   avatarContainer: {
-    marginRight: 14,
+    marginRight: 24,
+    // fondo suave para que la silueta sea visible cuando NO hay imagen
+    backgroundColor: "#f2f4f3",
     // borde blanco para separación respecto al card
     borderWidth: 2,
     borderColor: "#fff",
@@ -65,7 +67,7 @@ export const styles = StyleSheet.create({
 
   // Email en color secundario y tamaño reducido
   email: {
-    fontSize: 13,
+    fontSize: 15,
     color: "#6b6b6b",
   },
 });
