@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
 
   // Título (opcional) para orientar al usuario
   title: {
-    marginBottom: 10,
+    marginBottom: 32,
     textAlign: "center",
     color: "#222",
     fontWeight: "700",
@@ -19,8 +19,8 @@ export const styles = StyleSheet.create({
 
   // Wrapper de cada Input: ancho completo dentro del modal
   inputWrapper: {
-    width: "100%",
-    marginBottom: 10,
+    width: "105%",
+    marginBottom: 0,
   },
 
   // Estilo del contenedor interno del Input (fondo + padding + radio)
@@ -47,7 +47,7 @@ export const styles = StyleSheet.create({
 
   // Contenedor del botón: ancho completo, borde redondeado y overflow para ripple correcto
   btnContainer: {
-    width: "100%",
+    width: "95%",
     marginTop: 12,
     borderRadius: 10,
     overflow: "hidden",
@@ -58,5 +58,11 @@ export const styles = StyleSheet.create({
     backgroundColor: "#00a680",
     paddingVertical: 12,
     borderRadius: 10,
+  },
+    btnTitle: {
+    fontWeight: "600",
+    fontSize: 15,
+    textAlign: "center",
+    color: "#fff",
   },
 });

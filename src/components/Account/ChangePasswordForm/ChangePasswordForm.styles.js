@@ -11,7 +11,8 @@ export const styles = StyleSheet.create({
 
   // Título del formulario
   title: {
-    marginBottom: 10,
+    marginTop: 4,
+    marginBottom: 32,
     textAlign: "center",
     color: "#222",
     fontWeight: "700",
@@ -19,8 +20,8 @@ export const styles = StyleSheet.create({
 
   // Wrapper de cada input para tomar el 100% del ancho disponible
   inputWrapper: {
-    width: "100%",
-    marginBottom: 10,
+    width: "105%",
+    marginBottom: 0,
   },
 
   // Contenedor interno del input: fondo suave, padding y radio
@@ -47,7 +48,7 @@ export const styles = StyleSheet.create({
 
   // Contenedor del botón para que ocupe todo el ancho disponible
   btnContainer: {
-    width: "100%",
+    width: "95%",
     marginTop: 12,
     borderRadius: 10,
     overflow: "hidden", // para que el ripple no se salga del borde
@@ -60,9 +61,10 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  // Título del botón
-  btnTitle: {
-    fontWeight: "700",
+    btnTitle: {
+    fontWeight: "600",
     fontSize: 15,
+    textAlign: "center",
+    color: "#fff",
   },
 });

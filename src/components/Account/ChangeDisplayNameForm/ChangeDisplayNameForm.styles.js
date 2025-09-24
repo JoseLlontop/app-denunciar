@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   title: {
-    marginBottom: 8,
+    marginBottom: 32,
     textAlign: "center",
     color: "#222",
     fontWeight: "700",
@@ -16,8 +16,8 @@ export const styles = StyleSheet.create({
 
   // wrapper del Input (margen inferior y ancho completo dentro del modal)
   inputWrapper: {
-    width: "100%",
-    marginBottom: 6,
+    width: "105%",
+    marginBottom: 0,
   },
 
   // contenedor interno del Input: fondo, padding y radio
@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
 
   // botón: ancho total, padding y radio
   btnContainer: {
-    width: "100%",
+    width: "95%",
     marginTop: 12,
     borderRadius: 10,
     overflow: "hidden",
@@ -55,7 +55,9 @@ export const styles = StyleSheet.create({
     borderRadius: 10,
   },
   btnTitle: {
-    fontWeight: "700",
+    fontWeight: "600",
     fontSize: 15,
+    textAlign: "center",
+    color: "#fff",
   },
 });

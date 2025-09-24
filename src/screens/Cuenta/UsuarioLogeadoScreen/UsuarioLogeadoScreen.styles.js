@@ -31,7 +31,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 3,
-    marginTop: 10,
+    marginTop: 14,
     marginBottom: 6,
     borderWidth: 1,
     borderColor: "#eee",
