@@ -58,6 +58,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#00a680",
     paddingVertical: 12,
     borderRadius: 10,
+    marginBottom: 10,
   },
     btnTitle: {
     fontWeight: "600",

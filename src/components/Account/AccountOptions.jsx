@@ -47,7 +47,6 @@ export function AccountOptions({ onReload }) {
           accessibilityRole="button"
           accessibilityLabel={menu.title}
         >
-          {/* Icono izquierdo dentro de un círculo */}
           <View style={styles.iconBox}>
             <MaterialCommunityIcons
               name={menu.iconNameLeft}
@@ -56,14 +55,12 @@ export function AccountOptions({ onReload }) {
             />
           </View>
 
-          {/* Título (ocupa el espacio disponible) */}
           <View style={styles.textBox}>
             <Text numberOfLines={1} style={styles.title}>
               {menu.title}
             </Text>
           </View>
 
-          {/* Chevron derecho */}
           <MaterialCommunityIcons
             name="chevron-right"
             size={24}
