@@ -4,34 +4,63 @@ import { Input, Text, Icon } from "react-native-elements";
 import { useFormik } from "formik";
 import {
   getAuth,
-  updateEmail,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  reload,
+  verifyBeforeUpdateEmail, // <- ✅ clave
 } from "firebase/auth";
+import { getApp } from "firebase/app";
 import { initialValues, validationSchema } from "./ChangeEmailForm.data";
 import { styles } from "./ChangeEmailForm.styles";
 
-function mapFirebaseError(code) {
+// Mapa de errores → mensajes de UI
+function mapFirebaseError(err) {
+  const code = err?.code || "";
+  const raw = err?.message;
+
   switch (code) {
-    case "auth/wrong-password":
     case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/invalid-login-credentials":
       return { field: "password", message: "La contraseña no es correcta." };
+
     case "auth/user-mismatch":
       return { field: null, message: "La credencial no corresponde al usuario actual." };
+
     case "auth/too-many-requests":
       return { field: null, message: "Demasiados intentos. Esperá unos minutos e intentá de nuevo." };
+
     case "auth/network-request-failed":
       return { field: null, message: "Problema de conexión. Verificá tu Internet." };
+
     case "auth/user-disabled":
       return { field: null, message: "La cuenta del usuario está deshabilitada." };
+
     case "auth/invalid-email":
       return { field: "email", message: "El formato de email no es válido." };
+
     case "auth/email-already-in-use":
       return { field: "email", message: "Ese email ya está en uso por otra cuenta." };
+
     case "auth/requires-recent-login":
       return { field: null, message: "Por seguridad, iniciá sesión nuevamente y volvé a intentar." };
+
+    // ⬇️ Este es tu caso actual
+    case "auth/operation-not-allowed":
+      return {
+        field: null,
+        message:
+          "Por política del proyecto, primero debés verificar el nuevo email desde el enlace que te enviamos.",
+      };
+
+    // Si llegás a configurar deep links/continue URL y hay problemas de dominios:
+    case "auth/invalid-continue-uri":
+      return { field: null, message: "La URL de redirección no es válida." };
+    case "auth/unauthorized-continue-uri":
+      return { field: null, message: "La URL de redirección no está autorizada en Firebase." };
+
     default:
-      return { field: null, message: "Ocurrió un error inesperado. Volvé a intentar." };
+      return { field: null, message: raw || "Ocurrió un error inesperado. Volvé a intentar." };
   }
 }
 
@@ -46,14 +75,14 @@ export function ChangeEmailForm({ onClose, onReload }) {
     };
   }, []);
 
-  const onShowPassword = () => setShowPassword((prev) => !prev);
+  const onShowPassword = () => setShowPassword((p) => !p);
 
   const showBannerAndClose = (payload, delayMs) => {
     setBanner(payload);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      onClose?.();
       setBanner(null);
+      onClose?.();
     }, delayMs);
   };
 
@@ -62,49 +91,93 @@ export function ChangeEmailForm({ onClose, onReload }) {
     validationSchema: validationSchema(),
     validateOnChange: false,
     onSubmit: async (values, { setSubmitting, setFieldError, resetForm }) => {
-      const auth = getAuth();
+      // ✅ Usa SIEMPRE la misma instancia de Auth del app RN
+      const auth = getAuth(getApp());
       const currentUser = auth.currentUser;
 
       if (!currentUser) {
         setBanner({ type: "error", title: "Sin sesión", text: "Iniciá sesión e intentá nuevamente." });
         setSubmitting(false);
-        return; // ⬅️ NO cerramos el modal en error
-      }
-
-      const newEmail = values.email.trim();
-      if ((currentUser.email || "").toLowerCase() === newEmail.toLowerCase()) {
-        setFieldError("email", "El nuevo email es igual al actual.");
-        setBanner({ type: "error", title: "Sin cambios", text: "Ingresá un email distinto al actual." });
         return;
       }
 
+      // Refrescar datos antes de reautenticar
       try {
-        setSubmitting(true);
-        const credential = EmailAuthProvider.credential(currentUser.email || "", values.password);
+        await reload(currentUser);
+      } catch (e) {
+        console.log("[ChangeEmailForm] reload error ->", e?.code, e?.message, e);
+      }
+
+      const newEmail = (values.email || "").trim();
+      const currentEmail = (currentUser.email || "").trim();
+
+      if (currentEmail.toLowerCase() === newEmail.toLowerCase()) {
+        setFieldError("email", "El nuevo email es igual al actual.");
+        setBanner({ type: "error", title: "Sin cambios", text: "Ingresá un email distinto al actual." });
+        setSubmitting(false);
+        return;
+      }
+
+      // Verificar proveedor 'password'
+      const isPasswordProvider = (currentUser.providerData || [])
+        .map((p) => p.providerId)
+        .includes("password");
+      if (!isPasswordProvider) {
+        setFieldError("password", "Tu sesión no usa contraseña.");
+        setBanner({
+          type: "error",
+          title: "No se puede verificar con contraseña",
+          text: "Ingresaste con un proveedor externo. Reautenticá con ese proveedor o vinculá una contraseña primero.",
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      // 1) Reautenticar con contraseña
+      try {
+        const credential = EmailAuthProvider.credential(currentEmail, values.password);
         await reauthenticateWithCredential(currentUser, credential);
       } catch (err) {
-        const { field, message } = mapFirebaseError(err?.code);
+        console.log("[ChangeEmailForm] reauth error ->", err?.code, err?.message, err);
+        const { field, message } = mapFirebaseError(err);
         if (field) setFieldError(field, message);
         setBanner({ type: "error", title: "No pudimos verificar tu identidad", text: message });
         setSubmitting(false);
-        return; // ⬅️ NO cerramos el modal en error
+        return;
       }
 
+      // 2) Enviar verificación al NUEVO email (política requerida por tu proyecto)
       try {
-        await updateEmail(currentUser, newEmail);
-        resetForm();
-        onReload?.();
+        // ✅ Mínimo viable: sin actionCodeSettings (usa el dominio auth del proyecto)
+        await verifyBeforeUpdateEmail(currentUser, newEmail);
 
-        // ✅ ÉXITO: banner y cierre automático breve
+        // Si más adelante configurás deep links / continue URL, podrías usar:
+        // const ACTION_CODE_SETTINGS = {
+        //   url: "https://TU_DOMINIO_AUTORIZADO/finishEmailUpdate",
+        //   handleCodeInApp: true, // si querés abrir en tu app con deep link
+        //   iOS: { bundleId: "tu.bundle.id" },
+        //   android: { packageName: "tu.paquete.android", installApp: true, minimumVersion: "21" },
+        //   dynamicLinkDomain: "tudominio.page.link",
+        // };
+        // await verifyBeforeUpdateEmail(currentUser, newEmail, ACTION_CODE_SETTINGS);
+
+        resetForm();
+        onReload?.(); // refrescar pantalla si corresponde (el email efectivo se verá tras la confirmación)
         showBannerAndClose(
-          { type: "success", title: "Email actualizado", text: "Si hace falta, te pediremos verificarlo." },
-          1200
+          {
+            type: "success",
+            title: "Verificación enviada",
+            text:
+              "Te enviamos un enlace al nuevo email. Abrilo para confirmar el cambio. " +
+              "Después de confirmar, tu cuenta usará ese correo.",
+          },
+          6000
         );
       } catch (err) {
-        const { field, message } = mapFirebaseError(err?.code);
+        console.log("[ChangeEmailForm] verifyBeforeUpdateEmail error ->", err?.code, err?.message, err);
+        const { field, message } = mapFirebaseError(err);
         if (field) setFieldError(field, message);
-        setBanner({ type: "error", title: "No pudimos cambiar el email", text: message });
-        // ⬅️ NO cerramos el modal en error
+        setBanner({ type: "error", title: "No pudimos iniciar el cambio", text: message });
       } finally {
         setSubmitting(false);
       }

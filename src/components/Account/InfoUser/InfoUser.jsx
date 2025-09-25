@@ -1,31 +1,114 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { View, TouchableOpacity } from "react-native";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { View, TouchableOpacity, AppState } from "react-native";
 import { Avatar, Text } from "react-native-elements";
 import * as ImagePicker from "expo-image-picker";
-import { getAuth, onAuthStateChanged, updateProfile } from "firebase/auth";
+import {
+  getAuth,
+  onAuthStateChanged,
+  onIdTokenChanged,
+  updateProfile,
+  reload,
+} from "firebase/auth";
+import { getApp } from "firebase/app";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { styles } from "./InfoUser.styles";
 
-export function InfoUser({ setLoading, setLoadingText }) {
+/**
+ * Props:
+ * - autoRefreshMs   -> intervalo de refresco (ms). Default: 5000
+ * - autoRefreshMax  -> cantidad máx. de intentos. Default: 24 (~2 min)
+ */
+export function InfoUser({ setLoading, setLoadingText, autoRefreshMs = 5000, autoRefreshMax = 24 }) {
   const [user, setUser] = useState(null);
   const [avatar, setAvatar] = useState(null);
+  const prevEmailRef = useRef(null);
 
-  // Escucha cambios de sesión y evita leer currentUser cuando es null
+  // Guardamos el último email para detectar el cambio y cortar el polling
   useEffect(() => {
-    const auth = getAuth();
-    // estado inicial (por si ya hay sesión)
+    prevEmailRef.current = user?.email ?? null;
+  }, [user?.email]);
+
+  // Suscripciones Auth + estado inicial
+  useEffect(() => {
+    const auth = getAuth(getApp());
     setUser(auth.currentUser);
     setAvatar(auth.currentUser?.photoURL ?? null);
 
-    const unsub = onAuthStateChanged(auth, (u) => {
+    const unsubAuth = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setAvatar(u?.photoURL ?? null);
     });
-    return unsub;
+
+    const unsubToken = onIdTokenChanged(auth, (u) => {
+      setUser(u);
+      setAvatar(u?.photoURL ?? null);
+    });
+
+    return () => {
+      unsubAuth();
+      unsubToken();
+    };
   }, []);
 
+  // Reload cuando la app vuelve al primer plano (clave tras verificar el email en el navegador)
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", async (state) => {
+      if (state === "active") {
+        const auth = getAuth(getApp());
+        if (auth.currentUser) {
+          try {
+            await reload(auth.currentUser);
+            setUser(auth.currentUser);
+            setAvatar(auth.currentUser?.photoURL ?? null);
+          } catch (e) {
+            console.log("[InfoUser] reload on active ->", e?.code, e?.message);
+          }
+        }
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
+  // Polling breve: intenta refrescar hasta que detecta el nuevo email o se agota el tiempo
+  useEffect(() => {
+    if (!autoRefreshMs || autoRefreshMs <= 0 || autoRefreshMax <= 0) return;
+
+    let tries = 0;
+    let mounted = true;
+
+    const timer = setInterval(async () => {
+      tries += 1;
+      const auth = getAuth(getApp());
+      if (!auth.currentUser) return;
+
+      try {
+        await reload(auth.currentUser);
+        if (!mounted) return;
+
+        const refreshed = auth.currentUser;
+        setUser(refreshed);
+        setAvatar(refreshed?.photoURL ?? null);
+
+        // Si cambió el email, cortamos
+        if (prevEmailRef.current !== refreshed?.email) {
+          clearInterval(timer);
+        }
+      } catch (e) {
+      }
+
+      if (tries >= autoRefreshMax) {
+        clearInterval(timer);
+      }
+    }, autoRefreshMs);
+
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, [autoRefreshMs, autoRefreshMax]);
+
   const changeAvatar = useCallback(async () => {
-    if (!user) return; // seguridad: no hay usuario
+    if (!user) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -34,7 +117,6 @@ export function InfoUser({ setLoading, setLoadingText }) {
       quality: 0.9,
     });
 
-    // Compat: SDKs viejos usan "cancelled", nuevos "canceled" + assets[]
     const canceled = result.canceled ?? result.cancelled;
     const uri = result.assets?.[0]?.uri ?? result.uri;
 
@@ -69,7 +151,7 @@ export function InfoUser({ setLoading, setLoadingText }) {
       const imageRef = ref(storage, imagePath);
       const imageUrl = await getDownloadURL(imageRef);
 
-      const auth = getAuth();
+      const auth = getAuth(getApp());
       if (auth.currentUser) {
         await updateProfile(auth.currentUser, { photoURL: imageUrl });
         setAvatar(imageUrl);
@@ -79,7 +161,6 @@ export function InfoUser({ setLoading, setLoadingText }) {
     }
   };
 
-  // UI cuando no hay sesión (evita el crash y guía al usuario)
   if (!user) {
     return (
       <View style={styles.card}>
@@ -88,18 +169,18 @@ export function InfoUser({ setLoading, setLoadingText }) {
           rounded
           containerStyle={styles.avatarContainer}
           avatarStyle={styles.avatarImage}
-          // no enviamos `source` aquí; dejamos que muestre el icon fallback
           icon={{ type: "material-community", name: "account", color: "#666" }}
         />
         <View style={styles.textContainer}>
-          <Text style={styles.displayName}>Invitado</Text>
-          <Text style={styles.email}>Inicia sesión para ver tu perfil</Text>
+          <Text style={styles.displayName}>Sesión requerida</Text>
+          <Text style={styles.email}>
+            Tu perfil se actualizará cuando vuelvas a iniciar sesión.
+          </Text>
         </View>
       </View>
     );
   }
 
-  // UI normal con usuario autenticado
   return (
     <View style={styles.card}>
       <TouchableOpacity activeOpacity={0.8} onPress={changeAvatar}>
@@ -108,9 +189,7 @@ export function InfoUser({ setLoading, setLoadingText }) {
           rounded
           containerStyle={styles.avatarContainer}
           avatarStyle={styles.avatarImage}
-          // importante: NO pasar `source={null}`; usar undefined cuando no haya URL
           source={avatar ? { uri: avatar } : undefined}
-          // icon como fallback si no hay imagen
           icon={{ type: "material-community", name: "account", color: "#666" }}
         >
           <Avatar.Accessory size={26} onPress={changeAvatar} />

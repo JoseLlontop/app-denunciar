@@ -25,7 +25,7 @@ export const styles = StyleSheet.create({
 
   // Contenedor del avatar para dar borde y sombra
   avatarContainer: {
-    marginRight: 24,
+    marginRight: 20,
     // fondo suave para que la silueta sea visible cuando NO hay imagen
     backgroundColor: "#f2f4f3",
     // borde blanco para separación respecto al card

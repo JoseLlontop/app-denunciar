@@ -7,35 +7,53 @@ import {
   updatePassword,
   EmailAuthProvider,
   reauthenticateWithCredential,
+  reload,
 } from "firebase/auth";
+import { getApp } from "firebase/app";
 import { initialValues, validationSchema } from "./ChangePasswordForm.data";
 import { styles } from "./ChangePasswordForm.styles";
 
-function mapFirebaseError(code) {
+// Mapeo de errores: si no hay `code`, mostramos el mensaje crudo para diagnóstico
+function mapFirebaseError(err) {
+  const code = err?.code || "";
+  const raw = err?.message;
+
   switch (code) {
     case "auth/wrong-password":
     case "auth/invalid-credential":
+    case "auth/invalid-login-credentials":
       return { field: "password", message: "La contraseña actual no es correcta." };
+
     case "auth/user-mismatch":
       return { field: null, message: "La credencial no corresponde al usuario actual." };
+
     case "auth/too-many-requests":
       return { field: null, message: "Demasiados intentos. Esperá unos minutos e intentá de nuevo." };
+
     case "auth/network-request-failed":
       return { field: null, message: "Problema de conexión. Verificá tu Internet." };
+
     case "auth/user-disabled":
       return { field: null, message: "La cuenta del usuario está deshabilitada." };
+
     case "auth/weak-password":
       return { field: "newPassword", message: "La nueva contraseña es muy débil (mínimo 6 caracteres)." };
+
     case "auth/requires-recent-login":
       return { field: null, message: "Por seguridad, iniciá sesión nuevamente y volvé a intentar." };
-    default:
-      return { field: null, message: "Ocurrió un error inesperado. Volvé a intentar." };
+
+    case "auth/user-token-expired":
+      return { field: null, message: "La sesión expiró. Iniciá sesión otra vez y reintentá." };
+
+    case "auth/internal-error":
+      return { field: null, message: "Error interno de autenticación. Probá nuevamente." };
   }
+  return { field: null, message: raw || "Ocurrió un error inesperado. Volvé a intentar." };
 }
 
 export function ChangePasswordForm({ onClose }) {
   const [showPassword, setShowPassword] = useState(false);
-  const [banner, setBanner] = useState(null); // { type, title, text }
+  const [banner, setBanner] = useState(null); // { type: 'success'|'error', title, text }
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -60,27 +78,52 @@ export function ChangePasswordForm({ onClose }) {
     validationSchema: validationSchema(),
     validateOnChange: false,
     onSubmit: async (values, { setSubmitting, setFieldError, resetForm }) => {
-      const auth = getAuth();
+      // ✅ Usa SIEMPRE la instancia de Auth del app ya inicializada
+      const auth = getAuth(getApp());
       const currentUser = auth.currentUser;
 
       if (!currentUser) {
         setBanner({ type: "error", title: "Sin sesión", text: "Iniciá sesión e intentá nuevamente." });
         setSubmitting(false);
-        return; // ⬅️ NO cerramos el modal en error
+        return; // NO cerramos el modal en error
       }
 
+      // Refrescar datos antes de reautenticar (evita usar email/providerData obsoletos)
       try {
-        setSubmitting(true);
+        await reload(currentUser);
+      } catch (e) {
+        console.log("[ChangePasswordForm] reload error ->", e?.code, e?.message, e);
+      }
+
+      // Verificar que la sesión tenga proveedor 'password'
+      const hasPasswordProvider = (currentUser.providerData || [])
+        .map((p) => p.providerId)
+        .includes("password");
+      if (!hasPasswordProvider) {
+        setFieldError("password", "Tu sesión actual no usa contraseña.");
+        setBanner({
+          type: "error",
+          title: "No se puede verificar con contraseña",
+          text: "Ingresaste con un proveedor externo. Reautenticá con ese proveedor o vinculá una contraseña primero.",
+        });
+        setSubmitting(false);
+        return; // NO cerramos el modal en error
+      }
+
+      // 1) Reautenticar con la contraseña actual
+      try {
         const credential = EmailAuthProvider.credential(currentUser.email || "", values.password);
         await reauthenticateWithCredential(currentUser, credential);
       } catch (err) {
-        const { field, message } = mapFirebaseError(err?.code);
+        console.log("[ChangePasswordForm] reauth error ->", err?.code, err?.message, err);
+        const { field, message } = mapFirebaseError(err);
         if (field) setFieldError(field, message);
         setBanner({ type: "error", title: "No pudimos verificar tu identidad", text: message });
         setSubmitting(false);
-        return; // ⬅️ NO cerramos el modal en error
+        return; // NO cerramos el modal en error
       }
 
+      // 2) Actualizar contraseña
       try {
         await updatePassword(currentUser, values.newPassword);
         resetForm();
@@ -88,13 +131,13 @@ export function ChangePasswordForm({ onClose }) {
         // ✅ ÉXITO: banner y cierre automático breve
         showBannerAndClose(
           { type: "success", title: "Contraseña actualizada", text: "Tu contraseña se cambió correctamente." },
-          1200
+          3000
         );
       } catch (err) {
-        const { field, message } = mapFirebaseError(err?.code);
+        console.log("[ChangePasswordForm] updatePassword error ->", err?.code, err?.message, err);
+        const { field, message } = mapFirebaseError(err);
         if (field) setFieldError(field, message);
         setBanner({ type: "error", title: "No pudimos cambiar la contraseña", text: message });
-        // ⬅️ NO cerramos el modal en error
       } finally {
         setSubmitting(false);
       }
@@ -120,6 +163,7 @@ export function ChangePasswordForm({ onClose }) {
       <Input
         key="current-password"
         placeholder="Contraseña actual"
+        placeholderTextColor="#9e9e9e"
         containerStyle={styles.inputWrapper}
         inputContainerStyle={styles.inputContainer}
         inputStyle={styles.input}
@@ -133,6 +177,7 @@ export function ChangePasswordForm({ onClose }) {
       <Input
         key="new-password"
         placeholder="Nueva contraseña"
+        placeholderTextColor="#9e9e9e"
         containerStyle={styles.inputWrapper}
         inputContainerStyle={styles.inputContainer}
         inputStyle={styles.input}
@@ -146,6 +191,7 @@ export function ChangePasswordForm({ onClose }) {
       <Input
         key="confirm-password"
         placeholder="Repite nueva contraseña"
+        placeholderTextColor="#9e9e9e"
         containerStyle={styles.inputWrapper}
         inputContainerStyle={styles.inputContainer}
         inputStyle={styles.input}
@@ -172,6 +218,7 @@ export function ChangePasswordForm({ onClose }) {
         </TouchableOpacity>
       </View>
 
+      {/* Banner de feedback */}
       {banner && (
         <View
           style={[
@@ -215,7 +262,7 @@ const localStyles = StyleSheet.create({
     borderColor: "#ef9a9a",
   },
   feedbackTitle: {
-    fontWeight: "600",
+    fontWeight: "700",
     marginBottom: 2,
   },
   feedbackText: {
