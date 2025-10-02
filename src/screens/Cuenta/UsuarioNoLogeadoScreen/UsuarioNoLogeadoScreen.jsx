@@ -30,9 +30,9 @@ export function UsuarioNoLogeadoScreen() {
           </Text>
 
           <Text style={styles.description}>
-            Con <Text style={styles.highlight}>DenunciAR</Text> puedes señalar
-            incidencias en el mapa en menos de 4 pasos, subir fotos y describir
-            el problema. ¡Empieza ahora y haz la diferencia!
+            Con <Text style={styles.highlight}>DenunciAR</Text> puedes reportar 
+            incidencias en tu localidad.
+            ¡Registrate para poder subir fotos, describir el problema y enviar la denuncia.
           </Text>
         </Card>
 

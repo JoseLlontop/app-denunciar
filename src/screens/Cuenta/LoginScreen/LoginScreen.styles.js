@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
   },
   headerImage: {
     width: width,
-    height: height * 0.26,
+    height: height * 0.25,
     justifyContent: 'flex-end',
     overflow: 'hidden',
   },
@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   textRegister: {
-    marginTop: 16,
+    marginTop: 22,
     fontSize: 14,
     color: '#333',
   },
