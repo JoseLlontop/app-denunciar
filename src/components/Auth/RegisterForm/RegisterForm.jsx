@@ -13,10 +13,8 @@ import { apiFetch } from "../../../lib/apiClient";
 import { API_BASE_URL } from "@env";
 
 export function RegisterForm() {
-
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
-
   const { setAuthToken } = useAuth();
 
   const formik = useFormik({
@@ -26,25 +24,30 @@ export function RegisterForm() {
     onSubmit: async (formValue) => {
       try {
         const auth = getAuth();
-        const { email, password } = formValue;
+        const { email, password, nombre, telefono } = formValue;
 
         // 1) Crear usuario (ya queda autenticado)
         const { user } = await createUserWithEmailAndPassword(auth, email, password);
 
-        // 2) Obtener token (opcional; tu apiClient también lo pedirá)
+        // 2) Obtener token y guardarlo (opcional, apiFetch también lo pedirá)
         const token = await user.getIdToken();
-        console.log("el token es", token);
-
-        // 3) Guardar token en contexto (opcional, está bien)
         await setAuthToken(token);
 
-        // 4) Llamar backend con apiFetch (NO usar res.ok)
+        // 3) Sincronizar usuario con backend
         await apiFetch(`${API_BASE_URL}/usuarios/sync`, {
           method: "POST",
           body: { uid: user.uid, email: user.email },
         });
 
-        // Si llegó aquí, fue 2xx
+        // 4) Actualizar perfil con nombre y teléfono
+        await apiFetch(`${API_BASE_URL}/usuarios/me`, {
+          method: "PUT",
+          body: {
+            nombre: nombre?.trim(),
+            telefono: telefono?.trim() || "",
+          },
+        });
+
         Toast.show({ type: "success", position: "bottom", text1: "Registro exitoso" });
         navigation.navigate(screen.cuenta.cuenta);
       } catch (error) {
@@ -72,6 +75,30 @@ export function RegisterForm() {
             Crear Cuenta
           </Text>
 
+          {/* Nombre */}
+          <Input
+            placeholder="Nombre"
+            containerStyle={styles.input}
+            inputContainerStyle={styles.inputContainer}
+            inputStyle={{ paddingLeft: 0 }}
+            rightIcon={<Icon type="material-community" name="account" iconStyle={styles.icon} />}
+            onChangeText={(text) => formik.setFieldValue("nombre", text)}
+            errorMessage={formik.errors.nombre}
+          />
+
+          {/* Teléfono */}
+          <Input
+            placeholder="Teléfono"
+            containerStyle={styles.input}
+            inputContainerStyle={styles.inputContainer}
+            inputStyle={{ paddingLeft: 0 }}
+            keyboardType="phone-pad"
+            rightIcon={<Icon type="material-community" name="phone" iconStyle={styles.icon} />}
+            onChangeText={(text) => formik.setFieldValue("telefono", text)}
+            errorMessage={formik.errors.telefono}
+          />
+
+          {/* Email */}
           <Input
             placeholder="Correo electrónico"
             containerStyle={styles.input}
@@ -80,8 +107,10 @@ export function RegisterForm() {
             rightIcon={<Icon type="material-community" name="at" iconStyle={styles.icon} />}
             onChangeText={(text) => formik.setFieldValue("email", text)}
             errorMessage={formik.errors.email}
+            autoCapitalize="none"
           />
 
+          {/* Password */}
           <Input
             placeholder="Contraseña"
             containerStyle={styles.input}
@@ -97,8 +126,10 @@ export function RegisterForm() {
             }
             onChangeText={(text) => formik.setFieldValue("password", text)}
             errorMessage={formik.errors.password}
+            autoCapitalize="none"
           />
 
+          {/* Repeat Password */}
           <Input
             placeholder="Repetir contraseña"
             containerStyle={styles.input}
@@ -114,6 +145,7 @@ export function RegisterForm() {
             }
             onChangeText={(text) => formik.setFieldValue("repeatPassword", text)}
             errorMessage={formik.errors.repeatPassword}
+            autoCapitalize="none"
           />
 
           <View style={styles.buttonContainer}>

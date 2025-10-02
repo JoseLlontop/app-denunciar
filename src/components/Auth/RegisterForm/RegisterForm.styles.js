@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
-    marginVertical: 16,           // Menos margen alrededor del form
+    marginVertical: 12,           // Menos margen alrededor del form
   },
   input: {
     marginTop: 12,                 // Espacio reducido entre inputs
