@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, ScrollView, KeyboardAvoidingView, Platform, Text, StyleSheet } from "react-native";
+import { View, ScrollView, KeyboardAvoidingView, Platform, Text } from "react-native";
 import { Input, Icon, Button } from "react-native-elements";
 import { useFormik } from "formik";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
@@ -8,10 +8,16 @@ import { screen } from "../../../utils";
 import { initialValues, validationSchema } from "./RegisterForm.data";
 import { styles } from "./RegisterForm.styles";
 import Toast from "react-native-toast-message";
+import { useAuth } from "../../../context/AuthContext";
+import { apiFetch } from "../../../lib/apiClient";
+import { API_BASE_URL } from "@env";
 
 export function RegisterForm() {
+
   const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
+
+  const { setAuthToken } = useAuth();
 
   const formik = useFormik({
     initialValues: initialValues(),
@@ -20,13 +26,34 @@ export function RegisterForm() {
     onSubmit: async (formValue) => {
       try {
         const auth = getAuth();
-        await createUserWithEmailAndPassword(auth, formValue.email, formValue.password);
+        const { email, password } = formValue;
+
+        // 1) Crear usuario (ya queda autenticado)
+        const { user } = await createUserWithEmailAndPassword(auth, email, password);
+
+        // 2) Obtener token (opcional; tu apiClient también lo pedirá)
+        const token = await user.getIdToken();
+        console.log("el token es", token);
+
+        // 3) Guardar token en contexto (opcional, está bien)
+        await setAuthToken(token);
+
+        // 4) Llamar backend con apiFetch (NO usar res.ok)
+        await apiFetch(`${API_BASE_URL}/usuarios/sync`, {
+          method: "POST",
+          body: { uid: user.uid, email: user.email },
+        });
+
+        // Si llegó aquí, fue 2xx
+        Toast.show({ type: "success", position: "bottom", text1: "Registro exitoso" });
         navigation.navigate(screen.cuenta.cuenta);
       } catch (error) {
+        console.error(error);
         Toast.show({
           type: "error",
           position: "bottom",
-          text1: "Error al registrarse, intentalo mas tarde",
+          text1: "Error al registrarse",
+          text2: error?.message ?? "Inténtalo más tarde",
         });
       }
     },
