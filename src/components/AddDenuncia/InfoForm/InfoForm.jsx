@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text } from "react-native";
 import { Input, Icon, Button, Card } from "react-native-elements";
 import { Picker } from "@react-native-picker/picker";
@@ -6,87 +6,98 @@ import { MapForm } from "../MapForm";
 import { styles } from "./InfoForm.styles";
 
 export function InfoForm({ formik }) {
-  // Estado local para mostrar/ocultar el mapa
   const [showMap, setShowMap] = useState(false);
   const toggleMap = () => setShowMap(prev => !prev);
 
+  const hasLocation = useMemo(() => {
+    const loc = formik?.values?.location;
+    return !!(loc && typeof loc.latitude === "number" && typeof loc.longitude === "number");
+  }, [formik?.values?.location]);
+
+  const locationLabel = hasLocation
+    ? "Ubicación seleccionada"
+    : "Seleccioná la ubicación en el mapa";
+
   return (
-    <Card containerStyle={styles.card}>
+    <View style={styles.formContainer}>
+      <Card containerStyle={styles.card}>
+        {/* Sección: Detalles */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle1}>Detalles de la Denuncia</Text>
 
-      {/* Sección: Detalles de la incidencia */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Detalles de la Denuncia</Text>
-        {/* Input: Título breve */}
-        <Input
-          placeholder="Título breve"
-          inputContainerStyle={styles.inputContainer}
-          containerStyle={styles.inputWrapper}
-          onChangeText={text => formik.setFieldValue('title', text)}
-          errorMessage={formik.errors.title}
-          value={formik.values.title}
-        />
-        {/* Input: Descripción detallada */}
-        <Input
-          placeholder="Descripción detallada"
-          multiline
-          inputContainerStyle={[styles.inputContainer, styles.textArea]}
-          containerStyle={styles.inputWrapper}
-          onChangeText={text => formik.setFieldValue('description', text)}
-          errorMessage={formik.errors.description}
-          value={formik.values.description}
-        />
-        {/* Selector de categoría */}
-        <View style={styles.pickerWrapper}>
-          <Picker
-            selectedValue={formik.values.category}
-            onValueChange={value => formik.setFieldValue('category', value)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Seleccione Categoría" value="" />
-            <Picker.Item label="Bache" value="bache" />
-            <Picker.Item label="Alumbrado" value="alumbrado" />
-            <Picker.Item label="Residuos" value="residuos" />
-            <Picker.Item label="Seguridad" value="seguridad" />
-            <Picker.Item label="Otros" value="otros" />
-          </Picker>
-          {/* Mensaje de error para categoría */}
-          {formik.errors.category && <Text style={styles.error}>{formik.errors.category}</Text>}
+          <Input
+            placeholder="Título breve"
+            inputContainerStyle={styles.inputContainer}
+            containerStyle={styles.inputWrapper}
+            onChangeText={text => formik.setFieldValue("title", text)}
+            errorMessage={formik.errors.title}
+            value={formik.values.title}
+          />
+
+          <Input
+            placeholder="Descripción detallada"
+            multiline
+            inputContainerStyle={[styles.inputContainer, styles.textArea]}
+            containerStyle={styles.inputWrapper}
+            onChangeText={text => formik.setFieldValue("description", text)}
+            errorMessage={formik.errors.description}
+            value={formik.values.description}
+          />
+
+          <View style={styles.pickerWrapper}>
+            <Picker
+              selectedValue={formik.values.category}
+              onValueChange={value => formik.setFieldValue("category", value)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Seleccione Categoría" value="" />
+              <Picker.Item label="Bache" value="bache" />
+              <Picker.Item label="Alumbrado" value="alumbrado" />
+              <Picker.Item label="Residuos" value="residuos" />
+              <Picker.Item label="Seguridad" value="seguridad" />
+              <Picker.Item label="Otros" value="otros" />
+            </Picker>
+            {formik.errors.category && <Text style={styles.error}>{formik.errors.category}</Text>}
+          </View>
         </View>
-      </View>
 
-      {/* Sección: Ubicación y mapa */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Ubicación</Text>
-        {/* Input: Dirección con icono de mapa */}
-        <Input
-          placeholder="Dirección"
-          rightIcon={
+        {/* Sección: Ubicación (solo mapa) */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Ubicación</Text>
+
+          <View style={styles.locationRow}>
             <Icon
               type="material-community"
-              name="map-marker-radius"
-              // color dinámico según error o valor
-              color={formik.errors.address ? '#ff0000' : formik.values.address ? '#00a680' : '#c2c2c2'}
+              name={hasLocation ? "map-marker-check" : "map-marker-outline"}
+              color={hasLocation ? "#00a680" : "#c2c2c2"}
+              size={28}
+              containerStyle={styles.locationIcon}
               onPress={toggleMap}
             />
-          }
-          inputContainerStyle={styles.inputContainer}
-          containerStyle={styles.inputWrapper}
-          onChangeText={text => formik.setFieldValue('address', text)}
-          errorMessage={formik.errors.address}
-          value={formik.values.address}
-        />
-        {/* Botón para mostrar/ocultar mapa */}
-        <Button
-          title={showMap ? 'Cerrar Mapa' : 'Abrir Mapa'}
-          type="outline"
-          onPress={toggleMap}
-          buttonStyle={styles.mapButton}
-          containerStyle={styles.mapButtonWrapper}
-        />
-      </View>
+            <Text style={[styles.locationText, hasLocation && styles.locationTextSaved]}>
+              {locationLabel}
+            </Text>
+          </View>
 
-      {/* Componente de mapa flotante */}
+          {formik.errors.location && <Text style={styles.error}>{formik.errors.location}</Text>}
+
+          <Button
+            title={hasLocation ? "Editar ubicación" : "Seleccionar en mapa"}
+            type={hasLocation ? "solid" : "outline"}
+            onPress={toggleMap}
+            buttonStyle={hasLocation ? styles.mapButtonSaved : styles.mapButton}
+            containerStyle={styles.mapButtonWrapper}
+            icon={{
+              type: "material-community",
+              name: hasLocation ? "check-circle-outline" : "map-search-outline",
+              color: hasLocation ? "#fff" : "#00a680",
+            }}
+          />
+        </View>
+      </Card>
+
+      {/* Modal del mapa */}
       <MapForm show={showMap} close={toggleMap} formik={formik} />
-    </Card>
+    </View>
   );
 }

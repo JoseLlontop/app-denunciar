@@ -7,7 +7,6 @@ export function initialValues() {
     title: '',           // Título breve de la incidencia
     description: '',     // Descripción detallada
     category: '',        // Categoría seleccionada
-    address: '',         // Dirección de la incidencia
     location: null,      // Coordenadas { latitude, longitude }
     images: [],          // Array de URIs de imágenes
   };
@@ -31,10 +30,6 @@ export function validationSchema() {
 
     category: Yup.string()
       .required('La categoría es obligatoria'),
-
-    address: Yup.string()
-      .trim()
-      .required('La dirección es obligatoria'),
 
     location: Yup.object()
       .shape({
