@@ -50,4 +50,64 @@ npx expo start
 5. La aplicación cargará y se ejecutará en Expo Go.
 
 
+---
+
+## Conectar el backend local con la aplicacion **Expo Go** en un celular (misma red Wi‑Fi)
+
+### Pasos
+1. **Desactivar Firewall de Windows (temporalmente)**
+   - Panel de control → Sistema y seguridad → *Firewall de Windows Defender* → *Activar o desactivar* → desactiva en redes privadas y públicas.
+
+2. **Levantar el backend escuchando en toda la red (0.0.0.0)**
+   - **FastAPI (uvicorn)**:  
+     ```bash
+     uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+     ```
+
+3. **Obtener la IP de tu PC en la red Wi‑Fi**
+   - En Windows: `ipconfig` → busca **Dirección IPv4** (por ejemplo `192.168.100.205`).
+
+4. **Configurar `.env` para el celular en la misma red**
+   - Edita tu `.env` y reemplaza `API_BASE_URL` por la IP LAN de tu PC:
+     ```env
+     
+     # URL base del backend (PC y celular en la MISMA Wi‑Fi)
+     API_BASE_URL=http://192.168.100.205:8000
+     ```
+
+5. **Reiniciar Expo para que tome el `.env`**
+   - Cierra Metro/Expo y ejecuta nuevamente:
+     ```bash
+     npx expo start -c
+     ```
+
+6. **Al ejecutar expo verifique que este corriendo en la misma red `LAN`**
+   - Al ejecutar `npx expo start`. Escanea el QR con **Expo Go** en el celular.  
+   - Verás en la terminal de VS CODE algo similar a `exp://192.168.100.205:8081`.
+
+7. **Probar conectividad**
+   - Desde el navegador del celular: abre `http://192.168.100.205:8000/` (o `/health` si existe). Debe responder.
+   - En la app, las llamadas a `API_BASE_URL` deberían funcionar.
+
+8. **(Opcional) Volver a activar el Firewall**
+   - Repite el paso 1 y vuelve a **activar** el firewall al finalizar tus pruebas.
+
+---
+
+## Usar un **emulador** en tu PC
+
+### Android Emulator (Windows/macOS/Linux)
+- El emulador **no** llega a `127.0.0.1` del host; debe usar `http://10.0.2.2:8000` para acceder al backend del **host**.
+- Tu `.env` quedaría:
+  ```env
+
+  # URL base del backend para EMULADOR ANDROID
+  API_BASE_URL=http://10.0.2.2:8000
+  ```
+
+---
+
+> Recuerda **reiniciar Metro/Expo** cada vez que cambies `.env` (por ejemplo `npx expo start -c`).
+
+
 

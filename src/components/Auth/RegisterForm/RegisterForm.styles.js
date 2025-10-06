@@ -13,11 +13,11 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 4,
-    marginVertical: 16,           // Menos margen alrededor del form
+    marginVertical: 12,           // Menos margen alrededor del form
   },
   input: {
-    marginTop: 14,                 // Espacio reducido entre inputs
-    marginBottom: -6,               // Espacio reducido entre inputs
+    marginTop: 12,                 // Espacio reducido entre inputs
+    marginBottom: -10,               // Espacio reducido entre inputs
   },
   inputContainer: {
     backgroundColor: '#f5f6fa',

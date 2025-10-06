@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
   },
   headerImage: {
     width: width,
-    height: height * 0.26,        // Aumentada altura para imagen más grande
+    height: height * 0.18,        // Aumentada altura para imagen más grande
     justifyContent: 'flex-end',
     overflow: 'hidden',
   },

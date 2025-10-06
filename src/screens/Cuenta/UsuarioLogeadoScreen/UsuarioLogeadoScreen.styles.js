@@ -1,70 +1,161 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from "react-native";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
+const PRIMARY = "#00a680";
+const DANGER = "#e53935";
 
 export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: "#f2f2f2",
+    paddingTop: -23,
   },
+
+  // Contenedor principal del ScrollView
   container: {
+    paddingVertical: 1,
+    paddingHorizontal: 16,
+    alignItems: "center",
     flexGrow: 1,
-    alignItems: 'center',
+  },
+
+  // "Card" que envuelve las opciones de cuenta (View estilado)
+  cardOptions: {
+    width: width * 0.95,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 3,
+    marginTop: 14,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: "#eee",
+  },
+
+  // Wrapper del botón de logout (ahora con alignItems center)
+  logoutWrapper: {
+    width: width * 0.95,
+    marginTop: 18,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#eee",
+    alignItems: "center",   // <-- centra el contenido horizontalmente
+    justifyContent: "center",
+    paddingVertical: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+
+  // Botón personalizado (reemplaza RNE Button para evitar PadView)
+  btnTouchable: {
+    paddingVertical: 9,
+    paddingHorizontal: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    width: "60%",            // ancho controlado para que quede centrado y agradable
+  },
+  btnTextStyle: {
+    color: PRIMARY,
+    fontWeight: "600",
+    fontSize: 16,
+  },
+
+  /* ===== Modal de confirmación ===== */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 20,
   },
-  card: {
-    width: width * 0.9,
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-    alignItems: 'center',
+  modalCard: {
+    width: "90%",               // ancho responsivo
+    maxWidth: 420,
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.12,
+        shadowRadius: 18,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
-  imageContainer: {
-    alignSelf: 'center',       // Centra el contenedor de la imagen
-    marginBottom: 20,
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 6,
+    color: "#111",
+    textAlign: "center",
   },
-  image: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-  },
-  title: {
-    textAlign: 'center',
-    marginBottom: 10,
-    fontWeight: 'bold',
-  },
-  description: {
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#666',
+  modalMessage: {
+    fontSize: 14,
+    color: "#444",
+    marginBottom: 18,
     lineHeight: 20,
+    textAlign: "center",
   },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+
+  /* Acciones del modal: contenedores flex para botones iguales */
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  btnContainer: {
+  // contenedor de cada botón para controlar espacio y flex
+  modalBtnContainer: {
     flex: 1,
-    marginHorizontal: 5,
   },
-  btnPrimary: {
-    backgroundColor: '#00a680',
-    borderRadius: 8,
+  modalBtnContainerLeft: {
+    marginRight: 8,
+  },
+  modalBtnContainerRight: {
+    marginLeft: 8,
+  },
+
+  // estilos compartidos del botón
+  modalBtn: {
     paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  btnOutline: {
-    borderColor: '#00a680',
-    borderWidth: 1.5,
-    borderRadius: 8,
-    paddingVertical: 12,
+
+  modalBtnSecondary: {
+    backgroundColor: "#f1f1f1",
   },
-  btnOutlineTitle: {
-    color: '#00a680',
-    fontWeight: '700',
+  modalBtnSecondaryText: {
+    color: "#222",
+    fontWeight: "600",
+  },
+  modalBtnDanger: {
+    backgroundColor: DANGER,
+  },
+  modalBtnDangerText: {
+    color: "#fff",
+    fontWeight: "700",
   },
 });

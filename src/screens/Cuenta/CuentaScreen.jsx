@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { UsuarioNoLogeadoScreen } from "./UsuarioNoLogeadoScreen";
-import { UsuarioLogeadoScreen } from "./UsuarioLogeadoScreen";
-import { LoadingModal } from "../../components";
+import { UsuarioNoLogeadoScreen } from "./../Cuenta/UsuarioNoLogeadoScreen";
+import { UsuarioLogeadoScreen } from "../Cuenta/UsuarioLogeadoScreen/UsuarioLogeadoScreen";
+import { LoadingModal } from "../../components/Shared/LoadingModal";
 
 import { auth } from "../../utils/firebase"; 
 import { onAuthStateChanged } from "firebase/auth";

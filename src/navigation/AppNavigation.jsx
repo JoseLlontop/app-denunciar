@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Icon } from "react-native-elements";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { MapaStack } from "./MapaStack"; 
 import { DenunciaStack } from "./DenunciaStack";
 import { BuscarStack } from "./BuscarStack";
@@ -36,14 +36,14 @@ function screenOptions(route, color, size) {
     case screen.denuncia.tab:
       iconName = "plus-circle-outline";
       break;
-   {/* case screen.buscar.tab:
+   /* case screen.buscar.tab:
       iconName = "magnify";
-      break;  */}
+      break;  */
     case screen.cuenta.tab:
       iconName = "account-circle";
       break;
     default:
       iconName = "circle";
   }
-  return <Icon type="material-community" name={iconName} size={size} color={color} />;
+  return <MaterialCommunityIcons name={iconName} size={size} color={color} />;
 }

@@ -10,13 +10,16 @@ export function Modal({
   showCloseButton = true,
   fullWidth = false,
 }) {
+  // Normaliza children en un array y asegura keys internas si faltan
+  const childrenArray = React.Children.toArray(children);
+
   return (
     <Overlay
       isVisible={show}
       onBackdropPress={close}
       overlayStyle={[styles.overlay, fullWidth && styles.overlayFull]}
     >
-      {/* Pequeño encabezado con 'drag indicator' y botón cerrar */}
+      {/* Encabezado con 'drag indicator' y botón cerrar */}
       <View style={styles.header}>
         <View style={styles.dragIndicator} />
         {showCloseButton && (
@@ -26,14 +29,16 @@ export function Modal({
         )}
       </View>
 
-      {/* Contenido: scrollable para evitar overflow en pantallas pequeñas */}
+      {/* Contenido scrollable */}
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {children}
+        {childrenArray}
       </ScrollView>
     </Overlay>
   );
 }
+
+export default Modal;

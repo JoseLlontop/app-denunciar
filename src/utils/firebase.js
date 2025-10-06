@@ -1,30 +1,28 @@
-import { initializeApp } from "firebase/app";
-import { getApps, getApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  FIREBASE_API_KEY,
+  FIREBASE_AUTH_DOMAIN,
+  FIREBASE_PROJECT_ID,
+  FIREBASE_STORAGE_BUCKET,
+  FIREBASE_MESSAGING_SENDER_ID,
+  FIREBASE_APP_ID
+} from '@env';
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAb-7TaQKOLyK499gMV6Rip1YyEObubu4U",
-  authDomain: "app-denunciar-municipalidad.firebaseapp.com",
-  projectId: "app-denunciar-municipalidad",
-  storageBucket: "app-denunciar-municipalidad.firebasestorage.app",
-  messagingSenderId: "755994254656",
-  appId: "1:755994254656:web:f93beaa7d7c2ea4d3b6ea5"
+  apiKey: FIREBASE_API_KEY,
+  authDomain: FIREBASE_AUTH_DOMAIN,
+  projectId: FIREBASE_PROJECT_ID,
+  storageBucket: FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
+  appId: FIREBASE_APP_ID
 };
 
-// Initialize Firebase
-//export const initFirebase = initializeApp(firebaseConfig);
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Inicializa la app de Firebase (solo una vez)
-const app = !getApps().length
-  ? initializeApp(firebaseConfig)
-  : getApp();
-
-// Configura Firebase Auth con persistencia nativa
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage)
 });
 
-// Exporta lo necesario
 export { app, auth };

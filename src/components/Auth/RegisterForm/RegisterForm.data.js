@@ -1,21 +1,28 @@
-// Usamos Yup para la validación de formularios
 import * as Yup from "yup";
 
 export function initialValues() {
   return {
+    nombre: "",
+    telefono: "",
     email: "",
     password: "",
     repeatPassword: "",
   };
 }
 
-// El schema en Yup es un objeto que define las reglas de validación 
 export function validationSchema() {
   return Yup.object({
-    // Realizamos validaciones para cada campo del formulario
-    // email: debe ser un email válido y es obligatorio
-    // password: es obligatorio
-    // repeatPassword: es obligatorio y debe ser igual a password
+    nombre: Yup.string()
+      .trim()
+      .min(2, "El nombre es demasiado corto")
+      .required("El nombre es obligatorio"),
+
+    // EXACTAMENTE 10 dígitos (código de área + número). Sin 0, sin 15, sin +54.
+    telefono: Yup.string()
+      .trim()
+      .matches(/^\d{10}$/, "Debe tener 10 dígitos (sin +54)")
+      .required("El teléfono es obligatorio"),
+
     email: Yup.string()
       .email("El email no es correcto")
       .required("El email es obligatorio"),
