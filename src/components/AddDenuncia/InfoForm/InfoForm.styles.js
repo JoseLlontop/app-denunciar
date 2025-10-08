@@ -23,6 +23,44 @@ export const styles = StyleSheet.create({
     elevation: 3,
   },
 
+  // ---- NUEVOS ESTILOS PARA EL BLOQUE DE ESTADO ----
+  statusBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#FDBA74',   // naranja claro
+    backgroundColor: '#FFF7ED', // fondo ámbar muy claro
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  statusIcon: {
+    marginRight: 10,
+    marginTop: 2,
+  },
+  statusTextWrap: {
+    flex: 1,
+  },
+  statusBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F59E0B', // ámbar 500
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 9999,
+  },
+  statusBadgeText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 12,
+    letterSpacing: 1,
+  },
+  statusDescription: {
+    marginTop: 6,
+    color: '#7C2D12', // ámbar 900
+    fontSize: 13,
+  },
+  // ---- FIN NUEVOS ESTILOS ----
+
   section: {
     marginBottom: 24,
   },
@@ -35,7 +73,7 @@ export const styles = StyleSheet.create({
     paddingRight: 64,
   },
 
-    sectionTitle1: {
+  sectionTitle1: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 26,

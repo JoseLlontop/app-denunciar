@@ -21,6 +21,7 @@ export function InfoForm({ formik }) {
   return (
     <View style={styles.formContainer}>
       <Card containerStyle={styles.card}>
+
         {/* Sección: Detalles */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle1}>Detalles de la Denuncia</Text>
@@ -94,6 +95,26 @@ export function InfoForm({ formik }) {
             }}
           />
         </View>
+
+        {/* Bloque visual de estado (estático) */}
+        <View style={styles.statusBox}>
+          <Icon
+            type="material-community"
+            name="progress-clock"
+            color="#B45309"
+            size={24}
+            containerStyle={styles.statusIcon}
+          />
+          <View style={styles.statusTextWrap}>
+            <View style={styles.statusBadge}>
+              <Text style={styles.statusBadgeText}>PENDIENTE</Text>
+            </View>
+            <Text style={styles.statusDescription}>
+              Tu incidente será gestionado por un empleado de la municipalidad para su resolución.
+            </Text>
+          </View>
+        </View>
+
       </Card>
 
       {/* Modal del mapa */}

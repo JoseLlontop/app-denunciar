@@ -25,5 +25,6 @@ export const styles = StyleSheet.create({
     backgroundColor: '#00a680', // Color primario de la app
     paddingVertical: 14,         // Altura del botón
     borderRadius: 8,             // Bordes redondeados
+    marginBottom: 14,              // Separación superior
   },
 });
