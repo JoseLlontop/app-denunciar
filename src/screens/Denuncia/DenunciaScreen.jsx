@@ -1,63 +1,88 @@
 import React from 'react';
-import { SafeAreaView, ScrollView, View, Dimensions } from 'react-native';
-import { Button, Text } from 'react-native-elements';
+import { SafeAreaView, ScrollView } from 'react-native';
+import { Button } from 'react-native-elements';
 import { useFormik } from 'formik';
-import { v4 as uuid } from 'uuid';
-import { doc, setDoc } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
+
 import { InfoForm } from '../../components/AddDenuncia/InfoForm';
-import { UploadImagesForm } from '../../components/AddDenuncia/UploadImagesForm';
 import { ImageBackground } from '../../components/AddDenuncia/ImageBackground';
-import { db } from '../../utils';
+
+// import { UploadImagesForm } from '../../components/AddDenuncia/UploadImagesForm';
+
 import { initialValues, validationSchema } from './DenunciaScreen.data';
 import { styles } from './DenunciaScreen.styles';
+
+import { apiFetch } from '../../lib/apiClient';
+import { API_BASE_URL } from '@env';
+
+import Toast from 'react-native-toast-message';
 
 export function DenunciaScreen() {
   const navigation = useNavigation();
 
-  // Configuración de Formik con valores iniciales, validación y submit
   const formik = useFormik({
-    initialValues: initialValues(),               // Valores por defecto del formulario
-    validationSchema: validationSchema(),        // Esquema de validación con Yup
-    validateOnChange: false,                     // Validar sólo al enviar
-    onSubmit: async (formValue) => {
+    initialValues: initialValues(),
+    validationSchema: validationSchema(),
+    onSubmit: async (values, helpers) => {
       try {
-        // Generar ID único y timestamp antes de guardar
-        const newData = { ...formValue, id: uuid(), createdAt: new Date() };
-        // Guardar el documento en Firestore
-        await setDoc(doc(db, 'denuncias', newData.id), newData);
-        // Volver a la pantalla anterior
+        const payload = {
+          titulo: values.title?.trim(),
+          descripcion: values.description?.trim(),
+          categoria: values.category,
+          latitud: Number(values?.location?.latitude),
+          longitud: Number(values?.location?.longitude),
+        };
+
+        await apiFetch(`${API_BASE_URL}/reclamos/`, {
+          method: 'POST',
+          body: payload,
+        });
+
+        // limpiar formulario
+        helpers.resetForm({ values: initialValues() });
+
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Denuncia Enviada',
+          text2: 'Gracias! Tu reclamo fue enviado a la municipalidad.',
+        });
+
         navigation.goBack();
+
       } catch (error) {
-        console.log(error);
+        console.error(error);
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Error al crear la denuncia',
+          text2: 'Intentá nuevamente en unos minutos.',
+        });
+      } finally {
+        helpers.setSubmitting(false);
       }
     },
   });
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* ScrollView para habilitar scroll en pantallas pequeñas */}
-      <ScrollView
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Componente para manejar la imagen principal */}
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+
         <ImageBackground formik={formik} />
 
-        {/* Formulario con inputs de texto y picker */}
         <InfoForm formik={formik} />
 
-        {/* Formulario para subir imágenes adicionales */}
-        <UploadImagesForm formik={formik} />
+        {/* <UploadImagesForm formik={formik} /> */}
 
-        {/* Botón de envío de la denuncia */}
         <Button
           title="Crear Denuncia"
           buttonStyle={styles.submitButton}
           containerStyle={styles.submitWrapper}
           onPress={formik.handleSubmit}
           loading={formik.isSubmitting}
+          disabled={formik.isSubmitting}
         />
+
       </ScrollView>
     </SafeAreaView>
   );
