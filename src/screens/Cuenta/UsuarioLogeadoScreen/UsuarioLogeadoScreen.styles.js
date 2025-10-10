@@ -11,7 +11,6 @@ export const styles = StyleSheet.create({
     paddingTop: -23,
   },
 
-  // Contenedor principal del ScrollView
   container: {
     paddingVertical: 1,
     paddingHorizontal: 16,
@@ -19,7 +18,6 @@ export const styles = StyleSheet.create({
     flexGrow: 1,
   },
 
-  // "Card" que envuelve las opciones de cuenta (View estilado)
   cardOptions: {
     width: width * 0.95,
     backgroundColor: "#fff",
@@ -37,16 +35,30 @@ export const styles = StyleSheet.create({
     borderColor: "#eee",
   },
 
-  // Wrapper del botón de logout (ahora con alignItems center)
+  /* Sección Mis Reclamos */
+  reclamosWrapper: {
+    width: width * 0.95,
+    marginTop: 10,
+    borderRadius: 12,
+    overflow: "hidden",
+    /* backgroundColor: PRIMARY, */
+    borderWidth: 1,
+    borderColor: "#f2f2f2",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+  },
+
+  /* Wrapper del botón de logout */
   logoutWrapper: {
     width: width * 0.95,
-    marginTop: 18,
+    marginTop: 8,
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#eee",
-    alignItems: "center",   // <-- centra el contenido horizontalmente
+    alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
     ...Platform.select({
@@ -62,14 +74,14 @@ export const styles = StyleSheet.create({
     }),
   },
 
-  // Botón personalizado (reemplaza RNE Button para evitar PadView)
+  /* Botón base */
   btnTouchable: {
-    paddingVertical: 9,
+    paddingVertical: 18,
     paddingHorizontal: 15,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
-    width: "60%",            // ancho controlado para que quede centrado y agradable
+    width: "100%",
   },
   btnTextStyle: {
     color: PRIMARY,
@@ -77,7 +89,26 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  /* ===== Modal de confirmación ===== */
+btnTouchable1: {
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    width: "100%",
+  },
+
+  /* Variantes del botón */
+  btnPrimary: {
+    backgroundColor: PRIMARY,
+  },
+  btnPrimaryText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 17,
+  },
+
+  /* ===== Modal ===== */
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -86,7 +117,7 @@ export const styles = StyleSheet.create({
     padding: 20,
   },
   modalCard: {
-    width: "90%",               // ancho responsivo
+    width: "90%",
     maxWidth: 420,
     backgroundColor: "#fff",
     borderRadius: 14,
@@ -118,14 +149,11 @@ export const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: "center",
   },
-
-  /* Acciones del modal: contenedores flex para botones iguales */
   modalActions: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  // contenedor de cada botón para controlar espacio y flex
   modalBtnContainer: {
     flex: 1,
   },
@@ -135,15 +163,12 @@ export const styles = StyleSheet.create({
   modalBtnContainerRight: {
     marginLeft: 8,
   },
-
-  // estilos compartidos del botón
   modalBtn: {
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },
-
   modalBtnSecondary: {
     backgroundColor: "#f1f1f1",
   },

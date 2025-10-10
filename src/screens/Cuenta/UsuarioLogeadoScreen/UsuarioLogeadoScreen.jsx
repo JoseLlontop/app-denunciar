@@ -41,15 +41,28 @@ export function UsuarioLogeadoScreen() {
         {/* Información del usuario */}
         <InfoUser setLoading={setLoading} setLoadingText={setLoadingText} />
 
-        {/* Opciones de cuenta (reemplaza Card por View para evitar PadView) */}
+        {/* Opciones de cuenta */}
         <View style={styles.cardOptions}>
           <AccountOptions onReload={onReload} />
+        </View>
+
+        {/* Sección: Mis Reclamos */}
+        <View style={styles.reclamosWrapper}>
+          <TouchableOpacity
+            style={[styles.btnTouchable, styles.btnPrimary]}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate(screen.cuenta.reclamos)}
+            accessibilityRole="button"
+            accessibilityLabel="Ir a Mis Reclamos"
+          >
+            <Text style={styles.btnPrimaryText}>Mis Reclamos</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Botón de Cerrar sesión */}
         <View style={styles.logoutWrapper}>
           <TouchableOpacity
-            style={styles.btnTouchable}
+            style={styles.btnTouchable1}
             activeOpacity={0.7}
             onPress={() => setConfirmVisible(true)}
             accessibilityRole="button"
@@ -60,7 +73,7 @@ export function UsuarioLogeadoScreen() {
         </View>
       </ScrollView>
 
-      {/* Modal de confirmación estilado */}
+      {/* Modal de confirmación */}
       <Modal
         visible={confirmVisible}
         transparent
@@ -75,7 +88,6 @@ export function UsuarioLogeadoScreen() {
             </Text>
 
             <View style={styles.modalActions}>
-              {/* Botón cancelar */}
               <TouchableOpacity
                 onPress={() => setConfirmVisible(false)}
                 style={[styles.modalBtnContainer, styles.modalBtnContainerLeft]}
@@ -86,7 +98,6 @@ export function UsuarioLogeadoScreen() {
                 </View>
               </TouchableOpacity>
 
-              {/* Botón confirmar */}
               <TouchableOpacity
                 onPress={handleConfirmLogout}
                 style={[styles.modalBtnContainer, styles.modalBtnContainerRight]}

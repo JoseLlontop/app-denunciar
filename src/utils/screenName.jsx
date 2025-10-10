@@ -21,6 +21,7 @@ const cuentaStack = {
   login: "Login",
   register: "Register",
   perfil: "Perfil",
+  reclamos: "MisReclamos",
 };
 
 export const screen = {

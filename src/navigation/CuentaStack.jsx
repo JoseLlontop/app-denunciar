@@ -6,6 +6,7 @@ import { LoginScreen } from "../screens/Cuenta/LoginScreen/LoginScreen";
 import { RegisterScreen } from "../screens/Cuenta/RegisterScreen/RegisterScreen";
 import { screen } from "../utils";
 import { UsuarioLogeadoScreen } from "../screens/Cuenta/UsuarioLogeadoScreen/UsuarioLogeadoScreen";
+import { MisReclamosScreen } from "../screens/Cuenta/MisReclamosScreen/MisReclamosScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +39,13 @@ export function CuentaStack() {
         name={screen.cuenta.perfil}
         component={UsuarioLogeadoScreen}
         options={{ title: "Mi Perfil",
+        headerTitleAlign: "center"
+        }}
+      />
+        <Stack.Screen
+        name={screen.cuenta.reclamos}
+        component={MisReclamosScreen}
+        options={{ title: "Mis Reclamos",
         headerTitleAlign: "center"
         }}
       />
