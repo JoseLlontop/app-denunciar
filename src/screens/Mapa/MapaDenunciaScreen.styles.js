@@ -1,11 +1,135 @@
 import { StyleSheet, Platform } from 'react-native';
 
+// Paleta de colores para mantener consistencia
+const colors = {
+  primary: '#00a680',
+  white: '#FFFFFF',
+  textPrimary: '#212121',
+  textSecondary: '#757575',
+  background: '#f5f5f5',
+  lightGray: '#E0E0E0',
+  black: '#000',
+};
+
+// --- NUEVO ESTILO: "Light with Enhanced Contrast" ---
+// Mantiene un tema claro pero con calles y elementos mucho más definidos.
+export const customMapStyle = [
+  {
+    elementType: 'geometry',
+    stylers: [{ color: '#f5f5f5' }],
+  },
+  {
+    elementType: 'labels.icon',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#616161' }],
+  },
+  {
+    elementType: 'labels.text.stroke',
+    stylers: [{ color: '#f5f5f5' }],
+  },
+  {
+    featureType: 'administrative.land_parcel',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'administrative.land_parcel',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#bdbdbd' }],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'geometry',
+    stylers: [{ color: '#eeeeee' }],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#757575' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'geometry',
+    stylers: [{ color: '#e5e5e5' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#9e9e9e' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [{ color: '#ffffff' }],
+  },
+  {
+    featureType: 'road.arterial',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#757575' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry',
+    stylers: [{ color: '#dadada' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#616161' }],
+  },
+  {
+    featureType: 'road.local',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#9e9e9e' }],
+  },
+  {
+    featureType: 'transit.line',
+    elementType: 'geometry',
+    stylers: [{ color: '#e5e5e5' }],
+  },
+  {
+    featureType: 'transit.station',
+    elementType: 'geometry',
+    stylers: [{ color: '#eeeeee' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{ color: '#c9c9c9' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#9e9e9e' }],
+  },
+];
+
+
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   map: {
     ...StyleSheet.absoluteFillObject,
+  },
+  markerContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 166, 128, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerCore: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   fab: {
     position: 'absolute',
@@ -14,38 +138,37 @@ export const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#00a680',
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,
-        shadowRadius: 4,
+        shadowRadius: 5,
       },
       android: {
-        elevation: 6,
+        elevation: 8,
       },
     }),
   },
-  // --- Nuevos estilos para el Modal ---
   modal: {
-    justifyContent: 'flex-end', // Alinea el modal en la parte inferior
-    margin: 0, // Elimina los márgenes predeterminados
+    justifyContent: 'flex-end',
+    margin: 0,
   },
   modalContent: {
-    backgroundColor: 'white',
-    padding: 22,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    // Sombra para darle elevación
+    backgroundColor: colors.white,
+    padding: 16,
+    paddingTop: 12,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -3 },
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: -5 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowRadius: 8,
       },
       android: {
         elevation: 20,
@@ -55,31 +178,50 @@ export const styles = StyleSheet.create({
   handleBar: {
     width: 40,
     height: 5,
-    backgroundColor: '#ccc',
+    backgroundColor: colors.lightGray,
     borderRadius: 4,
     alignSelf: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
   },
-  // --- Estilos que antes eran de contentContainer ---
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
+    color: colors.textPrimary,
     marginBottom: 8,
+    textAlign: 'center',
   },
   description: {
     fontSize: 16,
-    marginBottom: 16,
-    color: '#666',
+    color: colors.textSecondary,
+    marginBottom: 24,
+    textAlign: 'center',
+    lineHeight: 24,
   },
-  infoContainer: {
+  infoRow: {
     flexDirection: 'row',
-    marginBottom: 8,
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  label: {
-    fontWeight: 'bold',
-    marginRight: 8,
+  infoIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
   },
-  value: {
+  infoTextContainer: {
     flex: 1,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 2,
+  },
+  infoValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
   },
 });

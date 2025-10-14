@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Icon } from 'react-native-elements';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import { screen } from '../../utils/screenName';
-import { styles } from './MapaDenunciaScreen.styles';
+import { styles, customMapStyle } from './MapaDenunciaScreen.styles';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { LoadingModal } from '../../components/Shared/LoadingModal';
 import { API_BASE_URL } from '@env';
 import axios from 'axios';
-import Modal from 'react-native-modal'; // <-- 1. Importar desde la nueva librería
+import Modal from 'react-native-modal';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -20,45 +20,75 @@ export function MapaDenunciaScreen() {
   const { user, isLoading: authLoading } = useAuth();
   const [reclamos, setReclamos] = useState([]);
   const [selectedReclamo, setSelectedReclamo] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isModalVisible, setModalVisible] = useState(false); // <-- 2. Nuevo estado para controlar la visibilidad
+  const [loading, setLoading] = useState(false);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [trackChanges, setTrackChanges] = useState(true);
 
-  useEffect(() => {
-    const fetchReclamos = async () => {
-      try {
-        const { data } = await api.get('/reclamos/');
-        setReclamos(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // --- 1. NUEVO ESTADO PARA CONTROLAR LA CARGA DEL DETALLE ---
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
 
-    fetchReclamos();
+  const fetchReclamos = useCallback(async () => {
+    setTrackChanges(true);
+    setLoading(true);
+    try {
+      const { data } = await api.get('/reclamos/');
+      setReclamos(data);
+    } catch (error) {
+      console.error("Error al obtener los reclamos:", error);
+      setReclamos([]);
+    } finally {
+      setLoading(false);
+      setTimeout(() => setTrackChanges(false), 500);
+    }
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchReclamos();
+      return () => {};
+    }, [fetchReclamos])
+  );
+
+  // --- 2. MODIFICAMOS LA FUNCIÓN PARA USAR EL NUEVO ESTADO DE CARGA ---
   const handleMarkerPress = async (reclamoId) => {
+    setModalVisible(true);       // Abrimos el modal vacío inmediatamente
+    setIsDetailLoading(true);    // Activamos el loader de pantalla completa
+    setSelectedReclamo(null);      // Nos aseguramos de que no haya datos previos
     try {
       const { data } = await api.get(`/reclamos/${reclamoId}`);
-      setSelectedReclamo(data);
-      setModalVisible(true); // <-- 3. Mostrar el modal
+      setSelectedReclamo(data);      // Cuando llegan los datos, se renderizan en el modal
     } catch (error) {
-      console.error(error);
+      console.error("Error al obtener detalle del reclamo:", error);
+      setModalVisible(false);      // Si hay un error, cerramos el modal
+    } finally {
+      setIsDetailLoading(false);   // Desactivamos el loader de pantalla completa
     }
   };
 
   const closeModal = () => {
-    setModalVisible(false); // <-- Función para cerrar el modal
+    setModalVisible(false);
   };
 
   const showFab = !authLoading && !!user;
+
+  const InfoRow = ({ iconName, iconType, label, value }) => (
+    <View style={styles.infoRow}>
+      <View style={styles.infoIconContainer}>
+        <Icon type={iconType || 'material-community'} name={iconName} size={22} color="#00a680" />
+      </View>
+      <View style={styles.infoTextContainer}>
+        <Text style={styles.infoLabel}>{label}</Text>
+        <Text style={styles.infoValue}>{value}</Text>
+      </View>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <MapView
         provider={PROVIDER_GOOGLE}
         style={styles.map}
+        customMapStyle={customMapStyle}
         initialRegion={{
           latitude: -34.9213,
           longitude: -57.9545,
@@ -70,12 +100,19 @@ export function MapaDenunciaScreen() {
           <Marker
             key={reclamo.id}
             coordinate={{
-              latitude: reclamo.latitud,
-              longitude: reclamo.longitud,
+              latitude: Number(reclamo.latitud),
+              longitude: Number(reclamo.longitud),
             }}
             title={reclamo.titulo}
             onPress={() => handleMarkerPress(reclamo.id)}
-          />
+            tracksViewChanges={trackChanges}
+          >
+            <View style={styles.markerContainer}>
+              <View style={styles.markerCore}>
+                 <Icon type="material-community" name="alert-circle" size={16} color="#fff" />
+              </View>
+            </View>
+          </Marker>
         ))}
       </MapView>
 
@@ -95,38 +132,47 @@ export function MapaDenunciaScreen() {
         </TouchableOpacity>
       )}
 
-      {/* 4. Reemplazar BottomSheet con Modal */}
-      {selectedReclamo && (
-        <Modal
-          isVisible={isModalVisible}
-          onBackdropPress={closeModal} // Cierra al tocar fuera
-          onSwipeComplete={closeModal} // Cierra al deslizar hacia abajo
-          swipeDirection="down"
-          style={styles.modal} // Estilo para posicionarlo abajo
-        >
-          <View style={styles.modalContent}>
-            <View style={styles.handleBar} />
-            <Text style={styles.title}>{selectedReclamo.titulo}</Text>
-            <Text style={styles.description}>{selectedReclamo.descripcion}</Text>
-            <View style={styles.infoContainer}>
-              <Text style={styles.label}>Categoría:</Text>
-              <Text style={styles.value}>{selectedReclamo.categoria}</Text>
-            </View>
-            <View style={styles.infoContainer}>
-              <Text style={styles.label}>Estado:</Text>
-              <Text style={styles.value}>{selectedReclamo.estado}</Text>
-            </View>
-            <View style={styles.infoContainer}>
-              <Text style={styles.label}>Fecha:</Text>
-              <Text style={styles.value}>
-                {new Date(selectedReclamo.fecha_creacion).toLocaleDateString()}
-              </Text>
-            </View>
-          </View>
-        </Modal>
-      )}
+      <Modal
+        isVisible={isModalVisible}
+        onBackdropPress={closeModal}
+        onSwipeComplete={closeModal}
+        swipeDirection="down"
+        style={styles.modal}
+        onModalWillHide={() => setSelectedReclamo(null)}
+      >
+        <View style={styles.modalContent}>
+          <View style={styles.handleBar} />
+          {/* --- 3. ELIMINAMOS EL LOADER INTERNO --- */}
+          {/* Ahora solo mostramos el contenido cuando `selectedReclamo` tiene datos */}
+          {selectedReclamo && (
+            <>
+              <Text style={styles.title}>{selectedReclamo.titulo}</Text>
+              <Text style={styles.description}>{selectedReclamo.descripcion}</Text>
+              <InfoRow
+                iconName="format-list-bulleted"
+                label="Categoría"
+                value={selectedReclamo.categoria}
+              />
+              <InfoRow
+                iconName="progress-check"
+                label="Estado"
+                value={selectedReclamo.estado}
+              />
+              <InfoRow
+                iconName="calendar-range"
+                label="Fecha de Creación"
+                value={new Date(selectedReclamo.fecha_creacion).toLocaleDateString()}
+              />
+            </>
+          )}
+        </View>
+      </Modal>
 
-      <LoadingModal show={loading} text="Cargando" />
+      {/* Loader para la carga inicial de denuncias */}
+      <LoadingModal show={loading && !isModalVisible} text="Actualizando denuncias..." />
+
+      {/* --- 4. NUEVO LOADER PARA EL DETALLE, UBICADO EN LA CAPA PRINCIPAL --- */}
+      <LoadingModal show={isDetailLoading} text="Cargando detalles..." />
     </View>
   );
 }
