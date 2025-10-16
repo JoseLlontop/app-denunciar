@@ -28,6 +28,7 @@ import {
   FIREBASE_APP_ID,
 } from "@env";
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
+import { SmsCodeInput } from "../ModalSMS/SmsCodeInput";
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -52,6 +53,18 @@ export function RegisterForm() {
     storageBucket: FIREBASE_STORAGE_BUCKET,
     messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
     appId: FIREBASE_APP_ID,
+  };
+
+  const handleCloseSmsModal = () => {
+    setSmsModalVisible(false);
+    setVerificationId(null);
+    setSmsCode("");
+    setPendingData(null);
+    Toast.show({
+      type: "info",
+      position: "bottom",
+      text1: "Verificación cancelada",
+    });
   };
 
   const formik = useFormik({
@@ -86,7 +99,6 @@ export function RegisterForm() {
 
         setVerificationId(vId);
         setSmsModalVisible(true);
-        Toast.show({ type: "info", position: "bottom", text1: "Te enviamos un SMS con el código" });
       } catch (error) {
         console.error(error);
         Toast.show({
@@ -179,10 +191,16 @@ export function RegisterForm() {
     >
       {/* reCAPTCHA para verificación por SMS */}
       <FirebaseRecaptchaVerifierModal
-        ref={recaptchaVerifier}
-        firebaseConfig={firebaseConfig}
-        attemptInvisibleVerification
-      />
+          ref={recaptchaVerifier}
+          firebaseConfig={firebaseConfig}
+          attemptInvisibleVerification
+          // Añadimos un título más descriptivo
+          title="Verificación de seguridad"
+          // Personalizamos el texto del botón de cancelar
+          cancelLabel="Cancelar"
+          // Aplicamos un estilo personalizado al contenedor del modal
+          containerStyle={styles.recaptchaContainer}
+        />
 
       <ScrollView keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
@@ -281,27 +299,38 @@ export function RegisterForm() {
         </View>
       </ScrollView>
 
-      {/* Modal para ingresar el código SMS */}
-      <Overlay isVisible={smsModalVisible} onBackdropPress={() => {}} overlayStyle={{ width: "90%", padding: 16 }}>
-        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 14, marginTop: 6 }}>Verificar teléfono</Text>
-        <Text style={{ marginBottom: 26 }}>
-          Ingresá el código que recibiste por SMS.
+    {/* Modal para ingresar el código SMS */}
+      <Overlay
+        isVisible={smsModalVisible}
+        // Asigna la nueva función al presionar fuera del modal
+        onBackdropPress={handleCloseSmsModal}
+        overlayStyle={styles.smsOverlay}
+      >
+        {/* Agrega el botón de cerrar aquí */}
+        <View style={styles.closeButtonContainer}>
+          <Icon
+            type="material-community"
+            name="close"
+            onPress={handleCloseSmsModal}
+            size={28}
+            color="#8e8e93" // Un color sutil para el ícono
+          />
+        </View>
+
+        <Text style={styles.modalTitle}>Verificar teléfono</Text>
+        <Text style={styles.modalText}>
+          Ingresa el código de 6 dígitos que recibiste por SMS.
         </Text>
 
-        <Input
-          placeholder="Código SMS"
-          keyboardType="number-pad"
-          onChangeText={setSmsCode}
-          value={smsCode}
-          inputContainerStyle={styles.inputContainer}
-          containerStyle={{ marginTop: 4, marginBottom: 4 }}
-        />
+        {/* Componente SMS (sin cambios) */}
+        <SmsCodeInput onCodeChange={setSmsCode} />
 
         <Button
           title={verifyingCode ? "Verificando..." : "Confirmar código"}
           onPress={confirmSmsCode}
           loading={verifyingCode}
-          buttonStyle={[styles.button, { marginTop: 8 }]}
+          buttonStyle={[styles.buttonSMS, { marginTop: 8 }]}
+          disabled={smsCode.length !== 6}
         />
       </Overlay>
     </KeyboardAvoidingView>

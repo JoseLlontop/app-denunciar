@@ -44,4 +44,46 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
+
+  buttonSMS: {
+    backgroundColor: '#00a680',   // Use same primary color
+    paddingVertical: 12,           // Altura de botón algo menor
+    borderRadius: 12,
+    paddingHorizontal: 12
+  },
+
+  smsOverlay: {
+      width: '90%',
+      padding: 24,
+      borderRadius: 12,
+      backgroundColor: '#ffffff',
+      alignItems: 'center', // Centra los elementos
+    },
+    modalTitle: {
+      fontSize: 22,
+      fontWeight: '700',
+      marginBottom: 8,
+      color: '#121212',
+    },
+    modalText: {
+      fontSize: 16,
+      color: '#666',
+      textAlign: 'center',
+      marginBottom: 12,
+      lineHeight: 22,
+    },
+    closeButtonContainer: {
+    position: 'absolute', // Clave para posicionarlo libremente
+    top: 10,
+    right: 10,
+    zIndex: 1, // Asegura que esté por encima de otros elementos si fuera necesario
+  },
+  recaptchaContainer: {
+    // Fondo oscuro semitransparente que cubre toda la pantalla
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    // Centra el contenido verticalmente
+    justifyContent: 'center',
+    // Centra el contenido horizontalmente
+    alignItems: 'center',
+  },
 });
