@@ -8,6 +8,9 @@ import { useNavigation } from '@react-navigation/native';
 import { screen } from '../../../utils';
 import { initialValues, validationSchema } from './LoginForm.data';
 import { styles } from './LoginForm.styles';
+// Importaciones añadidas para la llamada al backend
+import { apiFetch } from '../../../lib/apiClient';
+import { API_BASE_URL } from "@env";
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,14 +23,28 @@ export function LoginForm() {
     validateOnChange: false,
     onSubmit: async (values) => {
       try {
+        // 1. Autenticar al usuario con Firebase
         const auth = getAuth();
         await signInWithEmailAndPassword(auth, values.email, values.password);
+
+        // 2. Llamar a tu backend para actualizar 'ultimo_login'
+        // La función apiFetch ya se encarga de obtener y enviar el token de autorización.
+        await apiFetch(`${API_BASE_URL}/usuarios/login`, {
+          method: "POST",
+          // No se necesita 'body' según tu requerimiento.
+        });
+        
+        // 3. Navegar a la pantalla de perfil si todo fue exitoso
         navigation.navigate(screen.cuenta.perfil);
-      } catch {
+
+      } catch (error) {
+        // El bloque catch captura errores tanto de Firebase como de tu API.
+        console.error("Error en el inicio de sesión:", error);
         Toast.show({
           type: 'error',
           position: 'bottom',
           text1: 'Correo o contraseña incorrectos',
+          text2: 'Por favor, verifica tus datos e inténtalo de nuevo.'
         });
       }
     }
