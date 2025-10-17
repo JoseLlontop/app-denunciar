@@ -6,6 +6,9 @@ import { getAuth, updateProfile } from "firebase/auth";
 import Toast from "react-native-toast-message";
 import { initialValues, validationSchema } from "./ChangeDisplayNameForm.data";
 import { styles } from "./ChangeDisplayNameForm.styles";
+// Importaciones añadidas para la llamada al backend
+import { apiFetch } from "../../../lib/apiClient"; 
+import { API_BASE_URL } from "@env";
 
 export function ChangeDisplayNameForm({ onClose, onReload }) {
   const formik = useFormik({
@@ -14,15 +17,34 @@ export function ChangeDisplayNameForm({ onClose, onReload }) {
     validateOnChange: false,
     onSubmit: async ({ displayName }) => {
       try {
+        // 1. Actualizar el perfil en Firebase Authentication
         const currentUser = getAuth().currentUser;
         await updateProfile(currentUser, { displayName });
+
+        // 2. Actualizar el nombre en tu backend
+        await apiFetch(`${API_BASE_URL}/usuarios/me`, {
+          method: "PUT",
+          body: {
+            nombre: displayName,
+          },
+        });
+
+        // 3. Recargar y cerrar (si las operaciones fueron exitosas)
+        Toast.show({
+          type: "success",
+          position: "bottom",
+          text1: "Nombre actualizado correctamente",
+        });
+        
         onReload?.();
         onClose?.();
-      } catch {
+      } catch (error) {
+        console.error("Error al actualizar el nombre:", error);
         Toast.show({
           type: "error",
           position: "bottom",
-          text1: "Error al cambiar el nombre y apellidos",
+          text1: "Error al cambiar el nombre",
+          text2: "Inténtalo de nuevo más tarde.",
         });
       }
     },
