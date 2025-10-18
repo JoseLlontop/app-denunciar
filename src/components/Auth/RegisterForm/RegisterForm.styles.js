@@ -3,6 +3,12 @@ import { StyleSheet, Platform, Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
+
+    buttonUnirse: {
+    backgroundColor: '#00a680',   // Use same primary color
+    paddingVertical: 12,           // Altura de botón algo menor
+    borderRadius: 12,
+  },
   container: {
     width: width * 0.85,           // Match width of other cards
     backgroundColor: '#ffffff',
@@ -34,11 +40,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  button: {
-    backgroundColor: '#00a680',   // Use same primary color
-    paddingVertical: 12,           // Altura de botón algo menor
-    borderRadius: 12,
-  },
+
   buttonTitle: {
     fontSize: 16,
     fontWeight: '700',
@@ -86,4 +88,40 @@ export const styles = StyleSheet.create({
     // Centra el contenido horizontalmente
     alignItems: 'center',
   },
+
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+    marginHorizontal: -10, // Compensa el padding negativo del input
+  },
+  checkboxContainer: {
+    padding: 0,
+    margin: 0,
+    marginRight: 8, // Espacio entre check y texto
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+  },
+  termsText: {
+    fontSize: 14,
+    color: '#4f4f4f',
+    flexShrink: 1, // Permite que el texto se ajuste si no cabe
+  },
+  termsLink: {
+    color: '#00a680', // Color primario
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+
+  buttonUnirseDisabled: {
+    backgroundColor: '#00a680', // Un verde más pálido (deshabilitado)
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  
+  buttonTitleDisabled: {
+    color: '#ffffff', // Mantenemos el texto blanco sobre el fondo verde pálido
+  },
+
 });

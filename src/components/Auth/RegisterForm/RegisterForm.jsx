@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
-import { View, ScrollView, KeyboardAvoidingView, Platform, Text } from "react-native";
-import { Input, Icon, Button, Overlay } from "react-native-elements";
+import { View, ScrollView, KeyboardAvoidingView, Platform, Text, TouchableOpacity } from "react-native";
+import { Input, Icon, Button, Overlay, CheckBox } from "react-native-elements";
 import { useFormik } from "formik";
 import {
   getAuth,
@@ -29,9 +29,12 @@ import {
 } from "@env";
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { SmsCodeInput } from "../ModalSMS/SmsCodeInput";
+import { TermsModal } from "../TermsModal/TermsModal";
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false); // Estado para el checkbox
+  const [showTermsModal, setShowTermsModal] = useState(false); // Estado para el modal T&C
   const navigation = useNavigation();
   const { setAuthToken } = useAuth();
 
@@ -221,7 +224,7 @@ export function RegisterForm() {
 
           {/* Teléfono: EXACTAMENTE 10 dígitos (sin 0 / 15 / +54) */}
           <Input
-            placeholder="Teléfono (221555...)"
+            placeholder="Teléfono (221453...)"
             containerStyle={styles.input}
             inputContainerStyle={styles.inputContainer}
             inputStyle={{ paddingLeft: 0 }}
@@ -287,13 +290,34 @@ export function RegisterForm() {
             autoCapitalize="none"
           />
 
-          <View style={styles.buttonContainer}>
+          {/* ========= NUEVO: Checkbox Términos y Condiciones ========= */}
+          <View style={styles.termsContainer}>
+            <CheckBox
+              checked={acceptTerms}
+              onPress={() => setAcceptTerms((prev) => !prev)}
+              containerStyle={styles.checkboxContainer}
+              size={22}
+            />
+            <TouchableOpacity onPress={() => setShowTermsModal(true)}>
+              <Text style={styles.termsText}>
+                Acepto{" "}
+                <Text style={styles.termsLink}>Términos y Condiciones</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {/* ========================================================= */}
+
+
+        <View style={styles.buttonContainer}>
             <Button
               titleStyle={styles.buttonTitle}
-              buttonStyle={styles.button}
+              buttonStyle={styles.buttonUnirse} 
               onPress={formik.handleSubmit}
               loading={formik.isSubmitting || sendingSMS}
               title="Unirse"
+              disabled={!acceptTerms || formik.isSubmitting || sendingSMS}
+              disabledStyle={styles.buttonUnirseDisabled}
+              disabledTitleStyle={styles.buttonTitleDisabled}
             />
           </View>
         </View>
@@ -322,7 +346,7 @@ export function RegisterForm() {
           Ingresa el código de 6 dígitos que recibiste por SMS.
         </Text>
 
-        {/* Componente SMS (sin cambios) */}
+        {/* Componente SMS */}
         <SmsCodeInput onCodeChange={setSmsCode} />
 
         <Button
@@ -333,6 +357,13 @@ export function RegisterForm() {
           disabled={smsCode.length !== 6}
         />
       </Overlay>
+
+      {/* ========= Modal Términos y Condiciones ========= */}
+      <TermsModal
+        isVisible={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+      />
+      {/* ===================================================== */}
     </KeyboardAvoidingView>
   );
 }
