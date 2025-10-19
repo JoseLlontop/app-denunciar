@@ -107,7 +107,7 @@ export function InfoForm({ formik }) {
           />
           <View style={styles.statusTextWrap}>
             <View style={styles.statusBadge}>
-              <Text style={styles.statusBadgeText}>PENDIENTE</Text>
+              <Text style={styles.statusBadgeText}>ESPERANDO REVISIÓN</Text>
             </View>
             <Text style={styles.statusDescription}>
               Tu incidente será gestionado por un empleado de la municipalidad para su resolución.
