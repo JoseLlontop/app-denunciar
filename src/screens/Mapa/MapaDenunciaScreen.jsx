@@ -10,6 +10,7 @@ import { LoadingModal } from '../../components/Shared/LoadingModal';
 import { API_BASE_URL } from '@env';
 import axios from 'axios';
 import Modal from 'react-native-modal';
+import { getEstado } from "../../lib/mapeoEstados";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -142,7 +143,6 @@ export function MapaDenunciaScreen() {
       >
         <View style={styles.modalContent}>
           <View style={styles.handleBar} />
-          {/* --- 3. ELIMINAMOS EL LOADER INTERNO --- */}
           {/* Ahora solo mostramos el contenido cuando `selectedReclamo` tiene datos */}
           {selectedReclamo && (
             <>
@@ -156,7 +156,7 @@ export function MapaDenunciaScreen() {
               <InfoRow
                 iconName="progress-check"
                 label="Estado"
-                value={selectedReclamo.estado}
+                value={getEstado(selectedReclamo.estado)}
               />
               <InfoRow
                 iconName="calendar-range"

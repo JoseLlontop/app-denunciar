@@ -10,12 +10,13 @@ import {
   StyleSheet, // Import StyleSheet para los estilos dinámicos del texto del badge
 } from "react-native";
 import Toast from "react-native-toast-message";
-import Icon from "react-native-vector-icons/Ionicons"; // ¡Importante!
+import Icon from "react-native-vector-icons/Ionicons"; 
 import { styles } from "./MisReclamosScreen.styles";
 
 import { apiFetch } from "../../../lib/apiClient";
 import { API_BASE_URL } from "@env";
 import { LoadingModal } from "../../../components/Shared/LoadingModal/LoadingModal";
+import { getEstado } from '../../../lib/mapeoEstados'; 
 
 // --- Helpers ---
 
@@ -89,7 +90,10 @@ const ReclamoItem = React.memo(({ item, requestDelete }) => {
         <Text style={styles.cardTitle} numberOfLines={2}>{item?.titulo || "Sin título"}</Text>
         <View style={styles.cardRight}>
           <View style={estadoStyle.container}>
-            <Text style={[styles.badgeText, estadoStyle.text]}>{item?.estado?.replace("_", " ") || "—"}</Text>
+            {/* Funcion para mapear el nombre de los estaods */}
+            <Text style={[styles.badgeText, estadoStyle.text]}>
+              {getEstado(item?.estado)}
+            </Text>
           </View>
           <TouchableOpacity
             onPress={() => requestDelete(item)}
