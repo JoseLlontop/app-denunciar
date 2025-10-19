@@ -224,4 +224,49 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textPrimary,
   },
+  
+filterContainer: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 60 : 20, // Espacio para la barra de estado
+    left: 0,
+    right: 0,
+    zIndex: 1, // Asegura que esté sobre el mapa
+  },
+  filterScrollView: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  filterButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: colors.lightGray,
+    // Sombra para que resalte
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  filterButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  filterButtonText: {
+    color: colors.textPrimary,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  filterButtonTextActive: {
+    color: colors.white,
+  },
 });

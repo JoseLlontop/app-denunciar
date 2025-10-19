@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
@@ -16,6 +16,14 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
+// Definición de opciones de filtro
+const ESTADOS_FILTRO = [
+  { dbValue: 'todos', legible: 'Todos' },
+  { dbValue: 'pendiente', legible: getEstado('pendiente') },
+  { dbValue: 'en_progreso', legible: getEstado('en_progreso') },
+  { dbValue: 'resuelto', legible: getEstado('resuelto') },
+];
+
 export function MapaDenunciaScreen() {
   const navigation = useNavigation();
   const { user, isLoading: authLoading } = useAuth();
@@ -23,13 +31,15 @@ export function MapaDenunciaScreen() {
   const [selectedReclamo, setSelectedReclamo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
-  const [trackChanges, setTrackChanges] = useState(true);
-
-  // --- 1. NUEVO ESTADO PARA CONTROLAR LA CARGA DEL DETALLE ---
   const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const [filtroEstado, setFiltroEstado] = useState('resuelto');
+  
+  // Estado para controlar el redibujado de marcadores (soluciona parpadeo)
+  const [isTrackingChanges, setIsTrackingChanges] = useState(true);
 
   const fetchReclamos = useCallback(async () => {
-    setTrackChanges(true);
+    // 1. Activa el tracking antes de cargar datos
+    setIsTrackingChanges(true); 
     setLoading(true);
     try {
       const { data } = await api.get('/reclamos/');
@@ -39,7 +49,6 @@ export function MapaDenunciaScreen() {
       setReclamos([]);
     } finally {
       setLoading(false);
-      setTimeout(() => setTrackChanges(false), 500);
     }
   }, []);
 
@@ -50,19 +59,38 @@ export function MapaDenunciaScreen() {
     }, [fetchReclamos])
   );
 
-  // --- 2. MODIFICAMOS LA FUNCIÓN PARA USAR EL NUEVO ESTADO DE CARGA ---
+  // Lógica de filtrado con useMemo
+  const reclamosFiltrados = useMemo(() => {
+    if (filtroEstado === 'todos') {
+      return reclamos;
+    }
+    return reclamos.filter(reclamo => reclamo.estado === filtroEstado);
+  }, [reclamos, filtroEstado]);
+
+  // 2. Efecto para desactivar el tracking después de un redibujado
+  useEffect(() => {
+    if (isTrackingChanges) {
+      // Damos un tiempo para que el mapa renderice los cambios
+      const timer = setTimeout(() => {
+        setIsTrackingChanges(false);
+      }, 500); // 500ms es un valor seguro
+
+      return () => clearTimeout(timer);
+    }
+  }, [isTrackingChanges]); // Se ejecuta cada vez que isTrackingChanges se pone en 'true'
+
   const handleMarkerPress = async (reclamoId) => {
-    setModalVisible(true);       // Abrimos el modal vacío inmediatamente
-    setIsDetailLoading(true);    // Activamos el loader de pantalla completa
-    setSelectedReclamo(null);      // Nos aseguramos de que no haya datos previos
+    setModalVisible(true);
+    setIsDetailLoading(true);
+    setSelectedReclamo(null);
     try {
       const { data } = await api.get(`/reclamos/${reclamoId}`);
-      setSelectedReclamo(data);      // Cuando llegan los datos, se renderizan en el modal
+      setSelectedReclamo(data);
     } catch (error) {
       console.error("Error al obtener detalle del reclamo:", error);
-      setModalVisible(false);      // Si hay un error, cerramos el modal
+      setModalVisible(false);
     } finally {
-      setIsDetailLoading(false);   // Desactivamos el loader de pantalla completa
+      setIsDetailLoading(false);
     }
   };
 
@@ -86,6 +114,36 @@ export function MapaDenunciaScreen() {
 
   return (
     <View style={styles.container}>
+      {/* UI DEL FILTRO */}
+      <View style={styles.filterContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollView}>
+          {ESTADOS_FILTRO.map((filtro) => {
+            const isActive = filtro.dbValue === filtroEstado;
+            return (
+              <TouchableOpacity
+                key={filtro.dbValue}
+                style={[
+                  styles.filterButton,
+                  isActive && styles.filterButtonActive,
+                ]}
+                onPress={() => {
+                  // 3. Activa el tracking antes de cambiar el filtro
+                  setIsTrackingChanges(true); 
+                  setFiltroEstado(filtro.dbValue);
+                }}
+              >
+                <Text style={[
+                  styles.filterButtonText,
+                  isActive && styles.filterButtonTextActive,
+                ]}>
+                  {filtro.legible}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
       <MapView
         provider={PROVIDER_GOOGLE}
         style={styles.map}
@@ -96,8 +154,10 @@ export function MapaDenunciaScreen() {
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
+        mapPadding={{ top: Platform.OS === 'ios' ? 120 : 90, right: 0, bottom: 0, left: 0 }}
       >
-        {reclamos.map((reclamo) => (
+        {/* MAPA USA AHORA los reclamos FILTRADOS */}
+        {reclamosFiltrados.map((reclamo) => (
           <Marker
             key={reclamo.id}
             coordinate={{
@@ -106,7 +166,8 @@ export function MapaDenunciaScreen() {
             }}
             title={reclamo.titulo}
             onPress={() => handleMarkerPress(reclamo.id)}
-            tracksViewChanges={trackChanges}
+            // 4. Prop vinculada al estado de tracking
+            tracksViewChanges={isTrackingChanges} 
           >
             <View style={styles.markerContainer}>
               <View style={styles.markerCore}>
@@ -143,7 +204,6 @@ export function MapaDenunciaScreen() {
       >
         <View style={styles.modalContent}>
           <View style={styles.handleBar} />
-          {/* Ahora solo mostramos el contenido cuando `selectedReclamo` tiene datos */}
           {selectedReclamo && (
             <>
               <Text style={styles.title}>{selectedReclamo.titulo}</Text>
@@ -168,10 +228,7 @@ export function MapaDenunciaScreen() {
         </View>
       </Modal>
 
-      {/* Loader para la carga inicial de denuncias */}
       <LoadingModal show={loading && !isModalVisible} text="Actualizando denuncias..." />
-
-      {/* --- 4. NUEVO LOADER PARA EL DETALLE, UBICADO EN LA CAPA PRINCIPAL --- */}
       <LoadingModal show={isDetailLoading} text="Cargando detalles..." />
     </View>
   );
