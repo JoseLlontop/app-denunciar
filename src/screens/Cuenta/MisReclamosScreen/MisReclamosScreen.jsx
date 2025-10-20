@@ -17,6 +17,7 @@ import { apiFetch } from "../../../lib/apiClient";
 import { API_BASE_URL } from "@env";
 import { LoadingModal } from "../../../components/Shared/LoadingModal/LoadingModal";
 import { getEstado } from '../../../lib/mapeoEstados'; 
+import { getIncidentes } from "../../../lib/mapeoIncidentes";
 
 // --- Helpers ---
 
@@ -113,7 +114,7 @@ const ReclamoItem = React.memo(({ item, requestDelete }) => {
       <View style={styles.cardFooter}>
         <View style={categoriaTagStyle(item?.categoria)}>
           <Icon name={categoriaIcono(item?.categoria)} size={14} style={styles.tagIcon} />
-          <Text style={styles.tagText}>{item?.categoria || "otro"}</Text>
+          <Text style={styles.tagText}>{getIncidentes(item?.categoria) || "Otro"}</Text>
         </View>
         <Text style={styles.cardDate}>
           {item?.fecha_creacion ? `${formatFecha(item.fecha_creacion)}` : "—"}

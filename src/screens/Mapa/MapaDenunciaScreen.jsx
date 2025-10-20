@@ -11,6 +11,7 @@ import { API_BASE_URL } from '@env';
 import axios from 'axios';
 import Modal from 'react-native-modal';
 import { getEstado } from "../../lib/mapeoEstados";
+import { getIncidentes } from "../../lib/mapeoIncidentes";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -211,7 +212,7 @@ export function MapaDenunciaScreen() {
               <InfoRow
                 iconName="format-list-bulleted"
                 label="Categoría"
-                value={selectedReclamo.categoria}
+                value={getIncidentes(selectedReclamo.categoria)}
               />
               <InfoRow
                 iconName="progress-check"

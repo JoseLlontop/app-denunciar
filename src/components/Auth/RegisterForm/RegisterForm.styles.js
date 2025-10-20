@@ -81,8 +81,6 @@ export const styles = StyleSheet.create({
     zIndex: 1, // Asegura que esté por encima de otros elementos si fuera necesario
   },
   recaptchaContainer: {
-    // Fondo oscuro semitransparente que cubre toda la pantalla
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     // Centra el contenido verticalmente
     justifyContent: 'center',
     // Centra el contenido horizontalmente
