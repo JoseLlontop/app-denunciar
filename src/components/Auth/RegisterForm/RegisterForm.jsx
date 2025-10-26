@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { View, ScrollView, KeyboardAvoidingView, Platform, Text, TouchableOpacity } from "react-native";
 import { Input, Icon, Button, Overlay, CheckBox } from "react-native-elements";
 import { useFormik } from "formik";
@@ -9,6 +9,7 @@ import {
   EmailAuthProvider,
   linkWithCredential,
   updateProfile,
+  RecaptchaVerifier,
   createUserWithEmailAndPassword, // usado para asegurar proveedor email/clave si quisieras alternativa, pero aquí linkeamos
 } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
@@ -27,7 +28,6 @@ import {
   FIREBASE_MESSAGING_SENDER_ID,
   FIREBASE_APP_ID,
 } from "@env";
-import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import { SmsCodeInput } from "../ModalSMS/SmsCodeInput";
 import { TermsModal } from "../TermsModal/TermsModal";
 
@@ -37,6 +37,42 @@ export function RegisterForm() {
   const [showTermsModal, setShowTermsModal] = useState(false); // Estado para el modal T&C
   const navigation = useNavigation();
   const { setAuthToken } = useAuth();
+  // Ref para el contenedor invisible del reCAPTCHA
+  const recaptchaContainerRef = useRef(null);
+  // Ref para guardar la instancia del verificador
+  const recaptchaVerifierRef = useRef(null);
+
+  // useEffect para inicializar el RecaptchaVerifier una vez
+  useEffect(() => {
+    const auth = getAuth();
+    // Asegúrate de que el contenedor exista antes de crear el verificador
+    if (recaptchaContainerRef.current) {
+      const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, { // Usa el ref del contenedor
+        size: 'invisible', // reCAPTCHA invisible
+        // Puedes agregar callbacks si necesitas manejar errores específicos del reCAPTCHA
+        // 'callback': (response) => { /* reCAPTCHA solved */ },
+        // 'expired-callback': () => { /* Response expired */ }
+      });
+
+      // Renderiza el verificador (importante!) y guarda la instancia en el ref
+      verifier.render().then((widgetId) => {
+         console.log("reCAPTCHA widget rendered, ID:", widgetId);
+         recaptchaVerifierRef.current = verifier; // Guarda la instancia
+      }).catch(error => {
+         console.error("Error rendering reCAPTCHA:", error);
+         Toast.show({ type: 'error', text1: 'Error inicializando reCAPTCHA' });
+         // Podrías deshabilitar el botón de submit aquí si falla
+      });
+
+      // Limpia el verificador cuando el componente se desmonte
+      return () => {
+        if (recaptchaVerifierRef.current) {
+          recaptchaVerifierRef.current.clear(); // Limpia la instancia de reCAPTCHA
+          recaptchaVerifierRef.current = null;
+        }
+      };
+    }
+  }, []); // El array vacío asegura que se ejecute solo una vez al montar
 
   // reCAPTCHA + SMS
   const recaptchaVerifier = useRef(null);
@@ -75,23 +111,27 @@ export function RegisterForm() {
     validationSchema: validationSchema(),
     validateOnChange: false,
     onSubmit: async (formValue, { setSubmitting }) => {
+      // Asegúrate que el verificador esté listo antes de intentar enviar SMS
+      if (!recaptchaVerifierRef.current) {
+        Toast.show({ type: "error", text1: "El verificador reCAPTCHA no está listo." });
+        setSubmitting(false);
+        return;
+      }
+
       try {
         const { telefono } = formValue;
-
-        // 1) Aseguramos que sean 10 dígitos exactos
         const local10 = onlyDigits(telefono);
         if (local10.length !== 10) {
           throw new Error("El teléfono debe tener 10 dígitos (sin 0 / 15 / +54).");
         }
-
-        // 2) Construimos E.164 Argentina móvil: +549 + 10 dígitos
         const phoneE164 = `+549${local10}`;
 
-        // 3) Enviar SMS (sin crear usuario aún)
         setSendingSMS(true);
         const auth = getAuth();
         const provider = new PhoneAuthProvider(auth);
-        const vId = await provider.verifyPhoneNumber(phoneE164, recaptchaVerifier.current);
+
+        // *** Pasa la instancia del ref al verifyPhoneNumber ***
+        const vId = await provider.verifyPhoneNumber(phoneE164, recaptchaVerifierRef.current);
 
         // Guardamos datos del form para usarlos al confirmar el código
         setPendingData({
@@ -103,12 +143,14 @@ export function RegisterForm() {
         setVerificationId(vId);
         setSmsModalVisible(true);
       } catch (error) {
-        console.error(error);
+        console.error("Error en onSubmit (SMS):", error); // Log más detallado
         Toast.show({
           type: "error",
           position: "bottom",
           text1: "No se pudo enviar el SMS",
-          text2: error?.message ?? "Inténtalo más tarde",
+          text2: error?.code === 'auth/captcha-check-failed'
+                 ? "Falló la verificación reCAPTCHA. Intenta de nuevo."
+                 : (error?.message ?? "Inténtalo más tarde"),
         });
       } finally {
         setSendingSMS(false);
@@ -192,18 +234,8 @@ export function RegisterForm() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      {/* reCAPTCHA para verificación por SMS */}
-      <FirebaseRecaptchaVerifierModal
-          ref={recaptchaVerifier}
-          firebaseConfig={firebaseConfig}
-          attemptInvisibleVerification
-          // Añadimos un título más descriptivo
-          title="Verificación de seguridad"
-          // Personalizamos el texto del botón de cancelar
-          cancelLabel="Cancelar"
-          // Aplicamos un estilo personalizado al contenedor del modal
-          containerStyle={styles.recaptchaContainer}
-        />
+      {/* Contenedor invisible para reCAPTCHA */}
+      <View ref={recaptchaContainerRef} style={{ height: 0, width: 0 }} />
 
       <ScrollView keyboardShouldPersistTaps="handled">
         <View style={styles.card}>

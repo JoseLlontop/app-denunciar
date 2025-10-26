@@ -2,33 +2,37 @@ import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
   viewImage: {
-    flexDirection: "row",
+    // Ya no es 'flexDirection: "row"'
     marginHorizontal: 16,
     marginTop: 11,
   },
-  scrollContent: {
-    alignItems: "center",
-    paddingRight: 8,
+  // 'scrollContent' se eliminó
+
+  gridContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "flex-start",
+    // Centramos los items en el espacio disponible
+    justifyContent: "flex-start", 
   },
 
   /* Botón 'Agregar' */
   addWrapper: {
     alignItems: "center",
-    marginLeft: 12,
-    marginBottom: 4,
+    margin: 8, // Espaciado uniforme para el grid
+    marginBottom: 4, // Mantenemos el margen inferior
   },
-  addCircle: {
+  // 'addCircle' se renombró y rediseñó -> 'addButton'
+  addButton: {
     width: 72,
     height: 72,
-    borderRadius: 36,
-    backgroundColor: "#00a680",
+    borderRadius: 10, // Para que coincida con las miniaturas
+    backgroundColor: "#f0fdfa", // Un verde muy claro
     justifyContent: "center",
     alignItems: "center",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
+    borderWidth: 1.5,
+    borderColor: "#00a680",
+    borderStyle: "dashed", // Estilo más moderno para "agregar"
   },
   addLabel: {
     marginTop: 6,
@@ -40,7 +44,7 @@ export const styles = StyleSheet.create({
   /* Miniaturas */
   imageWrapper: {
     position: "relative",
-    marginRight: 12,
+    margin: 8, // Espaciado uniforme para el grid
     alignItems: "center",
     justifyContent: "center",
   },
@@ -55,6 +59,7 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.12,
     shadowRadius: 4,
+    backgroundColor: "#f0f0f0", // Color de fondo mientras carga
   },
 
   /* Icono de eliminar sobre la miniatura */
@@ -65,6 +70,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     overflow: "hidden",
+    elevation: 4, // Para que esté sobre la sombra de la imagen
   },
 
   /* Error */
