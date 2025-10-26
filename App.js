@@ -6,6 +6,16 @@ import Toast from "react-native-toast-message";
 import { AppNavigation } from "./src/navigation/AppNavigation";
 import { AuthProvider } from "./src/context/AuthContext";
 
+import { LogBox } from 'react-native';
+
+// Oculta el warning 
+LogBox.ignoreLogs([
+  'Each child in a list should have a unique "key" prop',
+]);
+LogBox.ignoreLogs([
+  'SafeAreaView has been deprecated and will be removed in a future release',
+]);
+
 export default function App() {
   return (
     <RootSiblingParent>
