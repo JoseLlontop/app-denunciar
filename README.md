@@ -37,6 +37,36 @@ cp .env.example .env
 
 ---
 
+## Ejecutar nativamente en Android (**recomendado**)
+
+**¿Por qué es la opción recomendada?**  
+Para el **manejo de imágenes** (cámara, galería, permisos, cache) y otros módulos nativos, una build nativa ofrece un comportamiento más predecible y sin las limitaciones de **Expo Go**.
+
+**Requisitos previos**
+- Android Studio con SDK y AVD Manager instalados (o un teléfono Android con **Depuración USB** activada).
+- `adb` funcionando (Android Platform Tools).
+
+**Pasos**
+1. Abrí un **emulador** Android desde Android Studio **o** conectá tu **dispositivo** por USB y autorizá la depuración.
+2. En la raíz del proyecto, ejecutá:
+   ```bash
+   npx expo run:android
+   ```
+   Esto compila el proyecto nativo (Gradle) e instala la app en el emulador/dispositivo.
+3. El bundler de Expo (Metro) debería iniciarse automáticamente. Si no, en otra terminal corré:
+   ```bash
+   npx expo start
+   ```
+4. **URLs del backend** mientras desarrollás:
+   - Emulador Android: `http://10.0.2.2:8000`
+   - Dispositivo físico en la **misma Wi‑Fi**: `http://<IP_DE_TU_PC>:8000` (ver sección *Conectar el backend local...*).
+
+**Notas**
+- Si cambiás variables de entorno, reiniciá Metro con `npx expo start -c`.
+- La primera compilación puede tardar (descarga dependencias de Gradle).
+
+---
+
 ## Ejecutar la app y abrir en Expo Go
 
 1. Iniciar Expo desde la carpeta del proyecto:
