@@ -33,7 +33,12 @@ export function MapaDenunciaScreen() {
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
-  const [filtroEstado, setFiltroEstado] = useState('resuelto');
+
+  // 1. Inicia el filtro en 'todos' para la carga inicial
+  const [filtroEstado, setFiltroEstado] = useState('todos');
+
+  // 2. Flag para controlar el seteo del filtro por defecto
+  const [isInitialFilterSet, setIsInitialFilterSet] = useState(false);
   
   // Estado para controlar el redibujado de marcadores (soluciona parpadeo)
   const [isTrackingChanges, setIsTrackingChanges] = useState(true);
@@ -79,6 +84,23 @@ export function MapaDenunciaScreen() {
       return () => clearTimeout(timer);
     }
   }, [isTrackingChanges]); // Se ejecuta cada vez que isTrackingChanges se pone en 'true'
+
+  // 3. useEffect para aplicar el filtro por defecto ('resuelto') después de la carga
+  useEffect(() => {
+    // Si hay reclamos cargados y aún no hemos seteado el filtro inicial...
+    if (reclamos.length > 0 && !isInitialFilterSet) {
+      
+      // Activa el tracking para el cambio de filtro
+      setIsTrackingChanges(true); 
+      
+      // Aplica el filtro 'resuelto'
+      setFiltroEstado('resuelto');
+      
+      // Marca que el filtro inicial ya fue aplicado
+      setIsInitialFilterSet(true);
+    }
+  }, [reclamos, isInitialFilterSet]); // Depende de 'reclamos' y del flag
+
 
   const handleMarkerPress = async (reclamoId) => {
     setModalVisible(true);
