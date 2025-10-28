@@ -23,38 +23,26 @@ export const styles = StyleSheet.create({
     marginVertical: 10,
   },
 
-  // Contenedor del avatar para dar borde y sombra
-  avatarContainer: {
-    marginRight: 20,
-    // fondo suave para que la silueta sea visible cuando NO hay imagen
-    backgroundColor: "#f2f4f3",
-    // borde blanco para separación respecto al card
-    borderWidth: 2,
-    borderColor: "#fff",
-    borderRadius: 999, // circulo perfecto
-    // sombra extra para resaltar avatar
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+  // --- NUEVO ---
+  // Contenedor para el ícono que reemplaza al avatar
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 24, // Círculo
+    backgroundColor: "#f2f4f3", // Fondo suave
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 18, // Espacio antes del texto
   },
-
-  // estilo de la imagen interna del avatar (por si se necesita ajustar)
-  avatarImage: {
-    resizeMode: "cover",
-  },
+  
+  // --- ESTILOS DE AVATAR ELIMINADOS ---
+  // avatarContainer y avatarImage fueron removidos
 
   // Contenedor de textos (nombre + email)
   textContainer: {
     flex: 1,
     justifyContent: "center",
+    // marginLeft: 6 (removido, ahora el iconContainer maneja el espacio)
   },
 
   // Nombre del usuario con mayor peso visual
@@ -69,5 +57,21 @@ export const styles = StyleSheet.create({
   email: {
     fontSize: 15,
     color: "#6b6b6b",
+    marginBottom: 4, // Añadido para separar del nuevo texto
+  },
+
+  // --- NUEVO ---
+  // Estilo base para el texto de verificación
+  verificationText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  // Variante para email verificado
+  verified: {
+    color: "#00a680", // Verde (mismo de tu app)
+  },
+  // Variante para email no verificado
+  unverified: {
+    color: "#f57c00", // Naranja
   },
 });

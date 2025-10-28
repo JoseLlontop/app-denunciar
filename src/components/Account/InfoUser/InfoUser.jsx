@@ -1,16 +1,13 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { View, TouchableOpacity, AppState } from "react-native";
-import { Avatar, Text } from "react-native-elements";
-import * as ImagePicker from "expo-image-picker";
+import { View, AppState } from "react-native";
+import { Text, Icon } from "react-native-elements"; // <-- Importar Icon
 import {
   getAuth,
   onAuthStateChanged,
   onIdTokenChanged,
-  updateProfile,
   reload,
 } from "firebase/auth";
 import { getApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { styles } from "./InfoUser.styles";
 
 /**
@@ -18,10 +15,11 @@ import { styles } from "./InfoUser.styles";
  * - autoRefreshMs   -> intervalo de refresco (ms). Default: 5000
  * - autoRefreshMax  -> cantidad máx. de intentos. Default: 24 (~2 min)
  */
-export function InfoUser({ setLoading, setLoadingText, autoRefreshMs = 5000, autoRefreshMax = 24 }) {
+export function InfoUser({ autoRefreshMs = 5000, autoRefreshMax = 24 }) {
   const [user, setUser] = useState(null);
-  const [avatar, setAvatar] = useState(null);
   const prevEmailRef = useRef(null);
+
+  // ... (hooks useEffect sin cambios) ...
 
   // Guardamos el último email para detectar el cambio y cortar el polling
   useEffect(() => {
@@ -32,16 +30,13 @@ export function InfoUser({ setLoading, setLoadingText, autoRefreshMs = 5000, aut
   useEffect(() => {
     const auth = getAuth(getApp());
     setUser(auth.currentUser);
-    setAvatar(auth.currentUser?.photoURL ?? null);
 
     const unsubAuth = onAuthStateChanged(auth, (u) => {
       setUser(u);
-      setAvatar(u?.photoURL ?? null);
     });
 
     const unsubToken = onIdTokenChanged(auth, (u) => {
       setUser(u);
-      setAvatar(u?.photoURL ?? null);
     });
 
     return () => {
@@ -50,7 +45,7 @@ export function InfoUser({ setLoading, setLoadingText, autoRefreshMs = 5000, aut
     };
   }, []);
 
-  // Reload cuando la app vuelve al primer plano (clave tras verificar el email en el navegador)
+  // Reload cuando la app vuelve al primer plano
   useEffect(() => {
     const sub = AppState.addEventListener("change", async (state) => {
       if (state === "active") {
@@ -59,7 +54,6 @@ export function InfoUser({ setLoading, setLoadingText, autoRefreshMs = 5000, aut
           try {
             await reload(auth.currentUser);
             setUser(auth.currentUser);
-            setAvatar(auth.currentUser?.photoURL ?? null);
           } catch (e) {
             console.log("[InfoUser] reload on active ->", e?.code, e?.message);
           }
@@ -69,7 +63,7 @@ export function InfoUser({ setLoading, setLoadingText, autoRefreshMs = 5000, aut
     return () => sub.remove();
   }, []);
 
-  // Polling breve: intenta refrescar hasta que detecta el nuevo email o se agota el tiempo
+  // Polling breve...
   useEffect(() => {
     if (!autoRefreshMs || autoRefreshMs <= 0 || autoRefreshMax <= 0) return;
 
@@ -87,14 +81,11 @@ export function InfoUser({ setLoading, setLoadingText, autoRefreshMs = 5000, aut
 
         const refreshed = auth.currentUser;
         setUser(refreshed);
-        setAvatar(refreshed?.photoURL ?? null);
 
-        // Si cambió el email, cortamos
         if (prevEmailRef.current !== refreshed?.email) {
           clearInterval(timer);
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       if (tries >= autoRefreshMax) {
         clearInterval(timer);
@@ -107,70 +98,20 @@ export function InfoUser({ setLoading, setLoadingText, autoRefreshMs = 5000, aut
     };
   }, [autoRefreshMs, autoRefreshMax]);
 
-  const changeAvatar = useCallback(async () => {
-    if (!user) return;
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.9,
-    });
-
-    const canceled = result.canceled ?? result.cancelled;
-    const uri = result.assets?.[0]?.uri ?? result.uri;
-
-    if (!canceled && uri) {
-      await uploadImage(uri, user.uid);
-    }
-  }, [user]);
-
-  const uploadImage = async (uri, uid) => {
-    setLoadingText?.("Actualizando Avatar");
-    setLoading?.(true);
-
-    try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-
-      const storage = getStorage();
-      const storageRef = ref(storage, `avatar/${uid}`);
-
-      const snapshot = await uploadBytes(storageRef, blob);
-      await updatePhotoUrl(snapshot.metadata.fullPath);
-    } catch (error) {
-      console.log("Upload avatar error:", error);
-    } finally {
-      setLoading?.(false);
-    }
-  };
-
-  const updatePhotoUrl = async (imagePath) => {
-    try {
-      const storage = getStorage();
-      const imageRef = ref(storage, imagePath);
-      const imageUrl = await getDownloadURL(imageRef);
-
-      const auth = getAuth(getApp());
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, { photoURL: imageUrl });
-        setAvatar(imageUrl);
-      }
-    } catch (error) {
-      console.log("GetDownloadURL error:", error);
-    }
-  };
-
+  // --- VISTA "SESIÓN REQUERIDA" (MODIFICADA) ---
   if (!user) {
     return (
       <View style={styles.card}>
-        <Avatar
-          size="large"
-          rounded
-          containerStyle={styles.avatarContainer}
-          avatarStyle={styles.avatarImage}
-          icon={{ type: "material-community", name: "account", color: "#666" }}
-        />
+        {/* Icono para estado "no logueado" */}
+        <View style={styles.iconContainer}>
+          <Icon
+            type="material-community"
+            name="account-off-outline"
+            size={26}
+            color="#6b6b6b"
+          />
+        </View>
         <View style={styles.textContainer}>
           <Text style={styles.displayName}>Sesión requerida</Text>
           <Text style={styles.email}>
@@ -181,24 +122,33 @@ export function InfoUser({ setLoading, setLoadingText, autoRefreshMs = 5000, aut
     );
   }
 
+  // --- VISTA "LOGUEADO" (MODIFICADA) ---
   return (
     <View style={styles.card}>
-      <TouchableOpacity activeOpacity={0.8} onPress={changeAvatar}>
-        <Avatar
-          size="large"
-          rounded
-          containerStyle={styles.avatarContainer}
-          avatarStyle={styles.avatarImage}
-          source={avatar ? { uri: avatar } : undefined}
-          icon={{ type: "material-community", name: "account", color: "#666" }}
-        >
-          <Avatar.Accessory size={26} onPress={changeAvatar} />
-        </Avatar>
-      </TouchableOpacity>
+      {/* Icono de usuario */}
+      <View style={styles.iconContainer}>
+        <Icon
+          type="material-community"
+          name="account-outline"
+          size={34}
+          color="#333"
+        />
+      </View>
 
       <View style={styles.textContainer}>
         <Text style={styles.displayName}>{user.displayName || "Anónimo"}</Text>
         <Text style={styles.email}>{user.email}</Text>
+        
+        {/* Nuevo: Estado de verificación */}
+        {user.emailVerified ? (
+          <Text style={[styles.verificationText, styles.verified]}>
+            Email Verificado
+          </Text>
+        ) : (
+          <Text style={[styles.verificationText, styles.unverified]}>
+            Email no verificado
+          </Text>
+        )}
       </View>
     </View>
   );
