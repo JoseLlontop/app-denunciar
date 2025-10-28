@@ -5,6 +5,7 @@ import { RootSiblingParent } from "react-native-root-siblings";
 import Toast from "react-native-toast-message";
 import { AppNavigation } from "./src/navigation/AppNavigation";
 import { AuthProvider } from "./src/context/AuthContext";
+import 'react-native-get-random-values';
 
 import { LogBox } from 'react-native';
 
@@ -14,6 +15,9 @@ LogBox.ignoreLogs([
 ]);
 LogBox.ignoreLogs([
   'SafeAreaView has been deprecated and will be removed in a future release',
+]);
+LogBox.ignoreLogs([
+  '[expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated',
 ]);
 
 export default function App() {

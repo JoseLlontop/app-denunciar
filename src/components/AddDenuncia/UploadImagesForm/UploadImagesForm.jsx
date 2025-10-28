@@ -1,6 +1,12 @@
-import React, { useState, memo } from "react"; 
-import { ScrollView, View, TouchableOpacity } from "react-native";
-import { Icon, Avatar, Text, Dialog } from "react-native-elements";
+import React, { useState, memo } from "react";
+import {
+  ScrollView,
+  View,
+  TouchableOpacity,
+  Text,
+  Modal, 
+} from "react-native";
+import { Icon, Avatar } from "react-native-elements"; 
 import * as ImagePicker from "expo-image-picker";
 import { map, filter } from "lodash";
 import { ImageSourceModal } from "./ImageSourceModal";
@@ -9,15 +15,18 @@ import { styles } from "./UploadImagesForm.styles";
 export const UploadImagesForm = memo((props) => {
   const { formik } = props;
   const [showImageSource, setShowImageSource] = useState(false);
+  
+  // Estado del diálogo actualizado
   const [dialog, setDialog] = useState({
     isVisible: false,
     title: "",
     message: "",
     confirmText: "Aceptar",
     onConfirm: () => closeDialog(),
-    cancelText: "Cancelar",
+    cancelText: 'Cancelar',
     onCancel: () => closeDialog(),
     showCancel: false,
+    type: "info", 
   });
 
   const closeDialog = () => setDialog((prev) => ({ ...prev, isVisible: false }));
@@ -29,7 +38,7 @@ export const UploadImagesForm = memo((props) => {
     setShowImageSource(false);
   };
 
-  // --- LÓGICA DE PERMISOS ---
+  // --- LÓGICA DE PERMISOS (Actualizada con 'type') ---
   const handlePermission = async (type) => {
     const isCamera = type === "camera";
     const request = isCamera
@@ -46,6 +55,8 @@ export const UploadImagesForm = memo((props) => {
         confirmText: "Entendido",
         onConfirm: closeDialog,
         showCancel: false,
+        onCancel: closeDialog,
+        type: "info", 
       });
       return false;
     }
@@ -57,81 +68,54 @@ export const UploadImagesForm = memo((props) => {
     const hasPermission = await handlePermission("camera");
     if (!hasPermission) return;
 
+    closeImageSource(); // Close the modal after selection
     const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
+      allowsEditing: false,
+      //aspect: [4, 3],
       quality: 0.8,
     });
 
     if (!result.canceled) {
-      // Simplemente guardamos la URI local en Formik.
-      const uri = result.assets ? result.assets[0].uri : result.uri; // Para compatibilidad
+      const uri = result.assets ? result.assets[0].uri : result.uri;
       formik.setFieldValue("images", [...formik.values.images, uri]);
     }
   };
 
-  // --- LÓGICA DE GALERÍA  ---
+  // --- LÓGICA DE GALERÍA ---
   const openGallery = async () => {
     const hasPermission = await handlePermission("gallery");
     if (!hasPermission) return;
 
+    closeImageSource(); // Close the modal after selection
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
+      allowsEditing: false,
+      //aspect: [4, 3],
       quality: 0.8,
     });
 
     if (!result.canceled) {
-      // --- LÓGICA MODIFICADA ---
-      // Simplemente guardamos la URI local en Formik.
-      const uri = result.assets ? result.assets[0].uri : result.uri; // Para compatibilidad
+      const uri = result.assets ? result.assets[0].uri : result.uri;
       formik.setFieldValue("images", [...formik.values.images, uri]);
     }
   };
 
   // --- LÓGICA DE BORRADO ---
-  // Esta lógica ya era correcta, solo filtra el array.
-  // Ahora filtrará el array de URIs locales, lo cual es perfecto.
   const confirmRemoveImage = (img) => {
     setDialog({
       isVisible: true,
       title: "Eliminar imagen",
-      message: "¿Estás segur@ de eliminar esta imagen?",
+      message: "¿Estás seguro de eliminar esta imagen?",
       confirmText: "Eliminar",
       showCancel: true,
       onCancel: closeDialog,
       onConfirm: () => {
-        const result = filter(
-          formik.values.images,
-          (image) => image !== img
-        );
+        const result = filter(formik.values.images, (image) => image !== img);
         formik.setFieldValue("images", result);
         closeDialog();
       },
+      type: "danger", 
     });
-  };
-
-  // --- renderDialogActions ---
-  const renderDialogActions = () => {
-    const actions = [];
-    if (dialog.showCancel) {
-      actions.push(
-        <Dialog.Button
-          key="dialog-action-cancel"
-          title={dialog.cancelText}
-          onPress={dialog.onCancel}
-        />
-      );
-    }
-    actions.push(
-      <Dialog.Button
-        key="dialog-action-confirm"
-        title={dialog.confirmText}
-        onPress={dialog.onConfirm}
-      />
-    );
-    return actions;
   };
 
   return (
@@ -156,26 +140,22 @@ export const UploadImagesForm = memo((props) => {
           </TouchableOpacity>
 
           {/* Miniaturas */}
-          {/* El componente Avatar puede renderizar URIs locales "file://" sin problema */}
           {map(formik.values.images, (image) => (
-            <View 
-              key={image} 
-              style={styles.imageWrapper}
-            >
+            <View key={image} style={styles.imageWrapper}>
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => confirmRemoveImage(image)}
               >
                 <Avatar
                   source={{ uri: image }}
-                  size="medium"
-                  containerStyle={styles.imageStyle}
+                  size="medium" // Consistent size
+                  containerStyle={styles.imageStyle} // Use style from styles.js
                 />
                 <Icon
                   name="close-circle"
                   type="material-community"
-                  containerStyle={styles.deleteIconContainer}
-                  color="#ff4d4f"
+                  containerStyle={styles.deleteIconContainer} // Use style from styles.js
+                  color="#ff4d4f" // Standard delete color
                   size={20}
                 />
               </TouchableOpacity>
@@ -197,15 +177,67 @@ export const UploadImagesForm = memo((props) => {
         onOpenGallery={openGallery}
       />
 
-      {/* Dialog */}
-      {/* Sigue siendo útil para los permisos y la confirmación de borrado */}
-      <Dialog isVisible={dialog.isVisible} onBackdropPress={dialog.onCancel}>
-        <Dialog.Title title={dialog.title} />
-        <Text>{dialog.message}</Text>
-        <Dialog.Actions>
-          {renderDialogActions()}
-        </Dialog.Actions>
-      </Dialog>
+      {/* --- NUEVO MODAL --- */}
+      <Modal
+        visible={dialog.isVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={dialog.onCancel}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>{dialog.title}</Text>
+            
+            {/* Usamos ScrollView por si el mensaje es largo, como en tu Dialog */}
+            <ScrollView style={{ maxHeight: 150, marginBottom: 4 }}>
+              <Text style={styles.modalMessage}>{dialog.message}</Text>
+            </ScrollView>
+
+            <View style={styles.modalActions}>
+              {/* Botón Cancelar (condicional) */}
+              {dialog.showCancel && (
+                <TouchableOpacity
+                  onPress={dialog.onCancel}
+                  style={styles.modalBtnContainer}
+                  activeOpacity={0.85}
+                >
+                  <View style={[styles.modalBtn, styles.modalBtnSecondary]}>
+                    <Text style={styles.modalBtnSecondaryText}>
+                      {dialog.cancelText}Cancelar
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+
+              {/* Botón Confirmar (con estilo dinámico) */}
+              <TouchableOpacity
+                onPress={dialog.onConfirm}
+                style={styles.modalBtnContainer}
+                activeOpacity={0.85}
+              >
+                <View
+                  style={[
+                    styles.modalBtn,
+                    dialog.type === "danger"
+                      ? styles.modalBtnDanger  // Estilo rojo
+                      : styles.modalBtnPrimary, // Estilo azul/verde
+                  ]}
+                >
+                  <Text
+                    style={
+                      dialog.type === "danger"
+                        ? styles.modalBtnDangerText
+                        : styles.modalBtnPrimaryText
+                    }
+                  >
+                    {dialog.confirmText}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 });

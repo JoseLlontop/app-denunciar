@@ -40,9 +40,8 @@ export function validationSchema() {
       .nullable(),
 
     images: Yup.array()
-      .of(Yup.string().url('Cada imagen debe ser una URL válida'))
-      .notRequired(),
-      //.min(1, 'Se requiere al menos una imagen')
-      //.required('Las imágenes son obligatorias'),
+      .of(Yup.string()) 
+      .min(1, 'Se requiere al menos una imagen')
+      .required('Las imágenes son obligatorias'),
   });
 }

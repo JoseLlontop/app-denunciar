@@ -50,6 +50,7 @@ export function InfoForm({ formik }) {
               selectedValue={formik.values.category}
               onValueChange={value => formik.setFieldValue("category", value)}
               style={styles.picker}
+              itemStyle={{ color: '#000' }} 
             >
               <Picker.Item label="Seleccione Categoría" value="" />
               <Picker.Item label="Bache" value="baches" />
