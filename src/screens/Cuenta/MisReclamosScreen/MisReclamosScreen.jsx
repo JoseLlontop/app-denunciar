@@ -44,7 +44,6 @@ const ReclamoItem = React.memo(({ item, requestDelete }) => {
       case "alumbrado": return styles.accentAlumbrado;
       case "baches": return styles.accentBaches;
       case "residuos": return styles.accentResiduos;
-      case "seguridad": return styles.accentSeguridad;
       default: return styles.accentOtro;
     }
   };
@@ -63,7 +62,6 @@ const ReclamoItem = React.memo(({ item, requestDelete }) => {
       case "alumbrado": return [styles.tag, styles.tagAlumbrado];
       case "baches": return [styles.tag, styles.tagBaches];
       case "residuos": return [styles.tag, styles.tagResiduos];
-      case "seguridad": return [styles.tag, styles.tagSeguridad];
       default: return [styles.tag, styles.tagOtro];
     }
   };
@@ -73,7 +71,6 @@ const ReclamoItem = React.memo(({ item, requestDelete }) => {
       case "alumbrado": return "bulb-outline";
       case "baches": return "car-sport-outline";
       case "residuos": return "trash-bin-outline";
-      case "seguridad": return "shield-checkmark-outline";
       default: return "help-circle-outline";
     }
   };

@@ -118,14 +118,12 @@ export const styles = StyleSheet.create({
   accentAlumbrado: { borderLeftColor: "#22c55e" },
   accentBaches: { borderLeftColor: "#0ea5e9" },
   accentResiduos: { borderLeftColor: "#f59e0b" },
-  accentSeguridad: { borderLeftColor: "#ef4444" },
   accentOtro: { borderLeftColor: "#94a3b8" },
 
   // Tags por categoría
   tagAlumbrado: { backgroundColor: "#ecfdf5", borderColor: "#bbf7d0" },
   tagBaches: { backgroundColor: "#eef2ff", borderColor: "#c7d2fe" },
   tagResiduos: { backgroundColor: "#fff7ed", borderColor: "#fed7aa" },
-  tagSeguridad: { backgroundColor: "#fef2f2", borderColor: "#fecaca" },
   tagOtro: { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0" },
 
   // Error box

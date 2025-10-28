@@ -52,7 +52,7 @@ export const styles = StyleSheet.create({
   /* Miniaturas */
   imageWrapper: {
     position: "relative",
-    margin: 8, // Uniform spacing for the grid
+    margin: 9, // Uniform spacing for the grid
     alignItems: "center",
     justifyContent: "center",
   },

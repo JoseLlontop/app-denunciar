@@ -56,8 +56,6 @@ export function InfoForm({ formik }) {
               <Picker.Item label="Bache" value="baches" />
               <Picker.Item label="Alumbrado" value="alumbrado" />
               <Picker.Item label="Residuos" value="residuos" />
-              <Picker.Item label="Seguridad" value="seguridad" />
-              <Picker.Item label="Otro" value="otro" />
             </Picker>
             {formik.errors.category && <Text style={styles.error}>{formik.errors.category}</Text>}
           </View>
