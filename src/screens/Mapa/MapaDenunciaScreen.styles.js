@@ -227,7 +227,7 @@ export const styles = StyleSheet.create({
   
 filterContainer: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 20, // Espacio para la barra de estado
+    top: Platform.OS === 'ios' ? 48 : 8, // Espacio para la barra de estado
     left: 0,
     right: 0,
     zIndex: 1, // Asegura que esté sobre el mapa
@@ -237,12 +237,13 @@ filterContainer: {
     paddingVertical: 8,
   },
   filterButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
     backgroundColor: colors.white,
     borderRadius: 20,
     marginRight: 8,
     borderWidth: 1,
+    marginTop: -2,
     borderColor: colors.lightGray,
     // Sombra para que resalte
     ...Platform.select({

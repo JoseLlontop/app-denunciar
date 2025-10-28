@@ -10,6 +10,8 @@ export function getIncidentes(dbIncidentes) {
     default:
       // Si el incidente no es uno de los conocidos,
       // devuelve el mismo que recibió o un texto por defecto.
-      return dbStatus || 'Incidente Desconocido';
+      
+      // CORREGIDO: Usaba 'dbStatus' en lugar de 'dbIncidentes'
+      return 'Incidente Desconocido';
   }
 }

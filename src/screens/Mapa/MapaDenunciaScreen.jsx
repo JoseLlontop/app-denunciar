@@ -25,6 +25,13 @@ const ESTADOS_FILTRO = [
   { dbValue: 'resuelto', legible: getEstado('resuelto') },
 ];
 
+const CATEGORIAS_FILTRO = [
+  { dbValue: 'todos', legible: 'Todas' },
+  { dbValue: 'alumbrado', legible: getIncidentes('alumbrado') },
+  { dbValue: 'baches', legible: getIncidentes('baches') },
+  { dbValue: 'residuos', legible: getIncidentes('residuos') },
+]
+
 export function MapaDenunciaScreen() {
   const navigation = useNavigation();
   const { user, isLoading: authLoading } = useAuth();
@@ -33,6 +40,9 @@ export function MapaDenunciaScreen() {
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
+
+  // NUEVO: Estado para el filtro de categoría
+  const [filtroCategoria, setFiltroCategoria] = useState('todos');
 
   // 1. Inicia el filtro en 'todos' para la carga inicial
   const [filtroEstado, setFiltroEstado] = useState('todos');
@@ -65,13 +75,22 @@ export function MapaDenunciaScreen() {
     }, [fetchReclamos])
   );
 
-  // Lógica de filtrado con useMemo
+  // Lógica de filtrado con useMemo (AHORA COMBINADA)
   const reclamosFiltrados = useMemo(() => {
-    if (filtroEstado === 'todos') {
-      return reclamos;
+    let reclamosTemp = reclamos;
+
+    // 1. Aplicar filtro de estado
+    if (filtroEstado !== 'todos') {
+      reclamosTemp = reclamosTemp.filter(reclamo => reclamo.estado === filtroEstado);
     }
-    return reclamos.filter(reclamo => reclamo.estado === filtroEstado);
-  }, [reclamos, filtroEstado]);
+
+    // 2. Aplicar filtro de categoría sobre el resultado anterior
+    if (filtroCategoria !== 'todos') {
+      reclamosTemp = reclamosTemp.filter(reclamo => reclamo.categoria === filtroCategoria);
+    }
+
+    return reclamosTemp;
+  }, [reclamos, filtroEstado, filtroCategoria]); 
 
   // 2. Efecto para desactivar el tracking después de un redibujado
   useEffect(() => {
@@ -136,62 +155,89 @@ export function MapaDenunciaScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      {/* UI DEL FILTRO */}
-      <View style={styles.filterContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollView}>
-          {ESTADOS_FILTRO.map((filtro) => {
-            const isActive = filtro.dbValue === filtroEstado;
-            return (
-              <TouchableOpacity
-                key={filtro.dbValue}
-                style={[
-                  styles.filterButton,
-                  isActive && styles.filterButtonActive,
-                ]}
-                onPress={() => {
-                  // 3. Activa el tracking antes de cambiar el filtro
-                  setIsTrackingChanges(true); 
-                  setFiltroEstado(filtro.dbValue);
-                }}
-              >
-                <Text style={[
-                  styles.filterButtonText,
-                  isActive && styles.filterButtonTextActive,
-                ]}>
-                  {filtro.legible}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+      <View style={styles.container}>
+        {/* 4. MODIFICADO: UI DEL FILTRO (AÑADIDA SEGUNDA BARRA) */}
+        <View style={styles.filterContainer}>
+          {/* FILTRO 1: ESTADOS */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollView}>
+            {ESTADOS_FILTRO.map((filtro) => {
+              const isActive = filtro.dbValue === filtroEstado;
+              return (
+                <TouchableOpacity
+                  key={filtro.dbValue}
+                  style={[
+                    styles.filterButton,
+                    isActive && styles.filterButtonActive,
+                  ]}
+                  onPress={() => {
+                    setIsTrackingChanges(true); 
+                    setFiltroEstado(filtro.dbValue);
+                  }}
+                >
+                  <Text style={[
+                    styles.filterButtonText,
+                    isActive && styles.filterButtonTextActive,
+                  ]}>
+                    {filtro.legible}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+          
+          {/* FILTRO 2: CATEGORÍAS  */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollView}>
+            {CATEGORIAS_FILTRO.map((filtro) => {
+              const isActive = filtro.dbValue === filtroCategoria; // <- Usa estado de categoría
+              return (
+                <TouchableOpacity
+                  key={filtro.dbValue}
+                  style={[
+                    styles.filterButton,
+                    isActive && styles.filterButtonActive,
+                  ]}
+                  onPress={() => {
+                    setIsTrackingChanges(true); 
+                    setFiltroCategoria(filtro.dbValue); // <- Usa set de categoría
+                  }}
+                >
+                  <Text style={[
+                    styles.filterButtonText,
+                    isActive && styles.filterButtonTextActive,
+                  ]}>
+                    {filtro.legible}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
 
-      <MapView
-        provider={PROVIDER_GOOGLE}
-        style={styles.map}
-        customMapStyle={customMapStyle}
-        initialRegion={{
-          latitude: -34.9213,
-          longitude: -57.9545,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
-        mapPadding={{ top: Platform.OS === 'ios' ? 120 : 90, right: 0, bottom: 0, left: 0 }}
-      >
-        {/* MAPA USA AHORA los reclamos FILTRADOS */}
-        {reclamosFiltrados.map((reclamo) => (
-          <Marker
-            key={reclamo.id}
-            coordinate={{
-              latitude: Number(reclamo.latitud),
-              longitude: Number(reclamo.longitud),
-            }}
-            title={reclamo.titulo}
-            onPress={() => handleMarkerPress(reclamo.id)}
-            // 4. Prop vinculada al estado de tracking
-            tracksViewChanges={isTrackingChanges} 
-          >
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          style={styles.map}
+          customMapStyle={customMapStyle}
+          initialRegion={{
+            latitude: -34.9213,
+            longitude: -57.9545,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+          // 5. MODIFICADO: mapPadding aumentado para dar espacio a la nueva barra de filtros
+          mapPadding={{ top: Platform.OS === 'ios' ? 170 : 140, right: 0, bottom: 0, left: 0 }}
+        >
+          {/* MAPA USA AHORA los reclamos FILTRADOS */}
+          {reclamosFiltrados.map((reclamo) => (
+            <Marker
+              key={reclamo.id}
+              coordinate={{
+                latitude: Number(reclamo.latitud),
+                longitude: Number(reclamo.longitud),
+              }}
+              title={reclamo.titulo}
+              onPress={() => handleMarkerPress(reclamo.id)}
+              tracksViewChanges={isTrackingChanges} 
+            >
             <View style={styles.markerContainer}>
               <View style={styles.markerCore}>
                  <Icon type="material-community" name="alert-circle" size={16} color="#fff" />
