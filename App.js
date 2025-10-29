@@ -20,6 +20,10 @@ LogBox.ignoreLogs([
   '[expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated',
 ]);
 
+LogBox.ignoreLogs([
+  'This method is deprecated (as well as all React Native Firebase namespaced API) and will be',
+]);
+
 export default function App() {
   return (
     <RootSiblingParent>

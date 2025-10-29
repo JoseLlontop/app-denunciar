@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { ScrollView, View, Text, Modal, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { auth } from "../../../utils/firebase";
-import { signOut } from "firebase/auth";
+import { useAuth } from '../../../context/AuthContext';
 import { LoadingModal } from "../../../components/Shared";
 import { InfoUser, AccountOptions } from "../../../components/Account";
 import { styles } from "./UsuarioLogeadoScreen.styles";
@@ -15,6 +14,7 @@ export function UsuarioLogeadoScreen() {
   const [_, setReload] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const navigation = useNavigation();
+  const { signOut } = useAuth();
 
   const onReload = () => setReload((prev) => !prev);
 
@@ -23,8 +23,8 @@ export function UsuarioLogeadoScreen() {
       setConfirmVisible(false);
       setLoadingText("Cerrando sesión...");
       setLoading(true);
-      await signOut(auth);
-      navigation.navigate(screen.cuenta.login);
+      signOut()
+      navigation.navigate(screen.cuenta.cuenta);
     } catch (error) {
       console.log("Logout error:", error);
     } finally {

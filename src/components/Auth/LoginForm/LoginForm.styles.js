@@ -3,6 +3,7 @@ import { StyleSheet, Dimensions, Platform } from 'react-native';
 const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
+  // --- Estilos de la Tarjeta de Login (Tus estilos originales) ---
   card: {
     width: width * 0.9,
     borderRadius: 12,
@@ -20,7 +21,7 @@ export const styles = StyleSheet.create({
   },
   input: {
     width: '100%',
-    marginTop: 12,
+    marginTop: 7,
   },
   inputContainer: {
     backgroundColor: '#f5f6fa',
@@ -33,7 +34,7 @@ export const styles = StyleSheet.create({
     color: '#8e8e93',
   },
   btnContainer: {
-    marginTop: 16,
+    marginTop: 7,
     width: '100%',
     borderRadius: 12,
     overflow: 'hidden',
@@ -47,5 +48,41 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#ffffff',
+  },
+
+  // --- NUEVOS ESTILOS: Para el Modal SMS (Overlay) ---
+  smsOverlay: {
+    width: '90%',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  closeButtonContainer: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    zIndex: 1, // Asegura que esté por encima de otros elementos del modal
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  modalText: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333', // Un color de texto legible
+  },
+  buttonSMS: {
+    backgroundColor: '#00a680', // Mismo color que el botón de login
+    borderRadius: 12,
+    paddingVertical: 14,
   },
 });

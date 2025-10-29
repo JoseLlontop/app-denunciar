@@ -7,10 +7,9 @@ import React, {
   useState,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getAuth, onIdTokenChanged } from "firebase/auth";
+import { getAuth, onIdTokenChanged } from '@react-native-firebase/auth';
 
 const AUTH_TOKEN_KEY = "auth_token_v1";
-
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -27,13 +26,12 @@ export function AuthProvider({ children }) {
       }
       setAuthTokenState(token || null);
     } catch (e) {
-      // No bloqueamos la UI por errores de almacenamiento
       console.warn("No se pudo persistir el token:", e?.message);
       setAuthTokenState(token || null);
     }
   }, []);
 
-  const refreshToken = useCallback(async (force = true) => {
+const refreshToken = useCallback(async (force = true) => {
     const auth = getAuth();
     const current = auth.currentUser;
     if (!current) return null;
@@ -44,12 +42,11 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     const auth = getAuth();
-    await auth.signOut();
+    await auth.signOut(); 
     await setAuthToken(null);
     setUser(null);
   }, [setAuthToken]);
 
-  // Bootstrap inicial: leer token guardado y suscribir a cambios de Firebase
   useEffect(() => {
     let mounted = true;
 
@@ -58,7 +55,7 @@ export function AuthProvider({ children }) {
         const stored = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
         if (mounted && stored) setAuthTokenState(stored);
       } finally {
-        // Esperamos al primer evento de Firebase para cerrar isLoading
+        // ...
       }
     })();
 
@@ -85,8 +82,8 @@ export function AuthProvider({ children }) {
       user,
       authToken,
       isLoading,
-      setAuthToken,  // para guardar el token manualmente (p.ej. tras registro)
-      refreshToken,  // por si necesitas forzar renovación
+      setAuthToken,
+      refreshToken,
       signOut,
     }),
     [user, authToken, isLoading, setAuthToken, refreshToken, signOut]

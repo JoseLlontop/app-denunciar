@@ -19,12 +19,12 @@ export const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingHorizontal: 18,
+    paddingTop: 8,
     alignItems: 'center',
   },
   textRegister: {
-    marginTop: 22,
+    marginBottom: 19,
     fontSize: 14,
     color: '#333',
   },

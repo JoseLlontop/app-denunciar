@@ -1,4 +1,4 @@
-import { getAuth } from "firebase/auth";
+import { getAuth } from '@react-native-firebase/auth';
 
 export async function apiFetch(path, { method = "GET", headers = {}, body } = {}) {
   const auth = getAuth();
