@@ -34,12 +34,17 @@ module.exports = {
           apiKey: process.env.GOOGLE_MAPS_API_KEY
         }
       },
-      usesCleartextTraffic: true
+      usesCleartextTraffic: true,
+
+      "googleServicesFile": "./google-services.json"
+
     },
     web: {
       favicon: "./assets/favicon.png"
     },
-    plugins: [
+    plugins: [ 
+      '@react-native-firebase/app-check',
+      '@react-native-firebase/app', 
       [
         "expo-image-picker",
         {
