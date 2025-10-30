@@ -7,7 +7,8 @@ import React, {
   useState,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getAuth, onIdTokenChanged } from '@react-native-firebase/auth';
+
+import { auth } from "../utils/firebase";
 
 const AUTH_TOKEN_KEY = "auth_token_v1";
 const AuthContext = createContext(null);
@@ -31,8 +32,8 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-const refreshToken = useCallback(async (force = true) => {
-    const auth = getAuth();
+  const refreshToken = useCallback(async (force = true) => {
+    // 2. CAMBIO: Usamos la instancia 'auth' importada
     const current = auth.currentUser;
     if (!current) return null;
     const fresh = await current.getIdToken(force);
@@ -41,8 +42,8 @@ const refreshToken = useCallback(async (force = true) => {
   }, [setAuthToken]);
 
   const signOut = useCallback(async () => {
-    const auth = getAuth();
-    await auth.signOut(); 
+    // 3. CAMBIO: Usamos la instancia 'auth' importada
+    await auth.signOut();
     await setAuthToken(null);
     setUser(null);
   }, [setAuthToken]);
@@ -59,8 +60,8 @@ const refreshToken = useCallback(async (force = true) => {
       }
     })();
 
-    const auth = getAuth();
-    const unsub = onIdTokenChanged(auth, async (firebaseUser) => {
+    // 4. CAMBIO: 'onIdTokenChanged' ahora es un método de 'auth'
+    const unsub = auth.onIdTokenChanged(async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
         const t = await firebaseUser.getIdToken();

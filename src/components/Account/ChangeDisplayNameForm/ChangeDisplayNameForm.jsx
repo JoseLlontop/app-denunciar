@@ -2,7 +2,9 @@ import React from "react";
 import { View, TouchableOpacity, ActivityIndicator, Text as RNText } from "react-native";
 import { Input, Text, Icon } from "react-native-elements";
 import { useFormik } from "formik";
-import { getAuth, updateProfile } from "firebase/auth";
+
+import { auth } from "../../../utils/firebase";
+
 import Toast from "react-native-toast-message";
 import { initialValues, validationSchema } from "./ChangeDisplayNameForm.data";
 import { styles } from "./ChangeDisplayNameForm.styles";
@@ -17,11 +19,18 @@ export function ChangeDisplayNameForm({ onClose, onReload }) {
     validateOnChange: false,
     onSubmit: async ({ displayName }) => {
       try {
-        // 1. Actualizar el perfil en Firebase Authentication
-        const currentUser = getAuth().currentUser;
-        await updateProfile(currentUser, { displayName });
+        // 2. CAMBIO: Usamos 'auth' importada
+        const currentUser = auth.currentUser;
+        
+        if (!currentUser) {
+            Toast.show({ type: "error", text1: "Error", text2: "No se encontró la sesión de usuario." });
+            return;
+        }
 
-        // 2. Actualizar el nombre en tu backend
+        // 3. CAMBIO: 'updateProfile' es un método de 'currentUser'
+        await currentUser.updateProfile({ displayName });
+
+        // 2. Actualizar el nombre en tu backend (Esto estaba bien)
         await apiFetch(`${API_BASE_URL}/usuarios/me`, {
           method: "PUT",
           body: {
@@ -29,7 +38,7 @@ export function ChangeDisplayNameForm({ onClose, onReload }) {
           },
         });
 
-        // 3. Recargar y cerrar (si las operaciones fueron exitosas)
+        // 3. Recargar y cerrar (Esto estaba bien)
         Toast.show({
           type: "success",
           position: "bottom",

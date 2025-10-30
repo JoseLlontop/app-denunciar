@@ -2,14 +2,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { View, TouchableOpacity, ActivityIndicator, Text as RNText, StyleSheet } from "react-native";
 import { Input, Text, Icon } from "react-native-elements";
 import { useFormik } from "formik";
-import {
-  getAuth,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  reload,
-  verifyBeforeUpdateEmail, // <- ✅ clave
-} from "firebase/auth";
-import { getApp } from "firebase/app";
+
+import { auth } from "../../../utils/firebase"; 
+import { EmailAuthProvider } from "@react-native-firebase/auth"; 
+
 import { initialValues, validationSchema } from "./ChangeEmailForm.data";
 import { styles } from "./ChangeEmailForm.styles";
 
@@ -91,9 +87,10 @@ export function ChangeEmailForm({ onClose, onReload }) {
     validationSchema: validationSchema(),
     validateOnChange: false,
     onSubmit: async (values, { setSubmitting, setFieldError, resetForm }) => {
-      // ✅ Usa SIEMPRE la misma instancia de Auth del app RN
-      const auth = getAuth(getApp());
-      const currentUser = auth.currentUser;
+      
+      // 2. CAMBIO: Usamos 'auth' importada
+      // ELIMINADO: const auth = getAuth(getApp());
+      const currentUser = auth.currentUser; // <-- Directo de la instancia 'auth'
 
       if (!currentUser) {
         setBanner({ type: "error", title: "Sin sesión", text: "Iniciá sesión e intentá nuevamente." });
@@ -101,9 +98,10 @@ export function ChangeEmailForm({ onClose, onReload }) {
         return;
       }
 
-      // Refrescar datos antes de reautenticar
+      // Refrescar datos
       try {
-        await reload(currentUser);
+        // 3. CAMBIO: 'reload' es un método de 'currentUser'
+        await currentUser.reload();
       } catch (e) {
         console.log("[ChangeEmailForm] reload error ->", e?.code, e?.message, e);
       }
@@ -135,8 +133,12 @@ export function ChangeEmailForm({ onClose, onReload }) {
 
       // 1) Reautenticar con contraseña
       try {
+        // 4. CAMBIO: 'EmailAuthProvider' se importa de la librería nativa
         const credential = EmailAuthProvider.credential(currentEmail, values.password);
-        await reauthenticateWithCredential(currentUser, credential);
+        
+        // 5. CAMBIO: 'reauthenticateWithCredential' es un método de 'currentUser'
+        await currentUser.reauthenticateWithCredential(credential);
+
       } catch (err) {
         console.log("[ChangeEmailForm] reauth error ->", err?.code, err?.message, err);
         const { field, message } = mapFirebaseError(err);
@@ -146,10 +148,10 @@ export function ChangeEmailForm({ onClose, onReload }) {
         return;
       }
 
-      // 2) Enviar verificación al NUEVO email (política requerida por tu proyecto)
+      // 2) Enviar verificación al NUEVO email
       try {
-        // ✅ Mínimo viable: sin actionCodeSettings (usa el dominio auth del proyecto)
-        await verifyBeforeUpdateEmail(currentUser, newEmail);
+        // 6. CAMBIO: 'verifyBeforeUpdateEmail' es un método de 'currentUser'
+        await currentUser.verifyBeforeUpdateEmail(newEmail);
 
         // Si más adelante configurás deep links / continue URL, podrías usar:
         // const ACTION_CODE_SETTINGS = {

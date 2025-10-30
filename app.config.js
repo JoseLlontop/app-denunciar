@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 module.exports = {
   expo: {
     name: "app-denunciar",
@@ -8,7 +6,7 @@ module.exports = {
     orientation: "portrait",
     icon: "./assets/icon.png",
     userInterfaceStyle: "light",
-    newArchEnabled: true,
+    newArchEnabled: false,
     splash: {
       image: "./assets/splash-icon.png",
       resizeMode: "contain",
@@ -16,7 +14,6 @@ module.exports = {
     },
     ios: {
       supportsTablet: true,
-      // Google Maps (iOS)
       config: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY
       }
@@ -28,29 +25,28 @@ module.exports = {
       },
       edgeToEdgeEnabled: true,
       package: "com.josellontop.appdenunciar",
-      // Google Maps (Android)
       config: {
         googleMaps: {
           apiKey: process.env.GOOGLE_MAPS_API_KEY
         }
       },
       usesCleartextTraffic: true,
-
-      "googleServicesFile": "./google-services.json"
-
+      "googleServicesFile": "./google-services.json" // <-- Correcto
     },
     web: {
       favicon: "./assets/favicon.png"
     },
-    plugins: [ 
-      '@react-native-firebase/app-check',
-      '@react-native-firebase/app', 
+    plugins: [
+      '@react-native-firebase/app',       // <-- Correcto
+      '@react-native-firebase/app-check', // <-- Correcto
+      '@react-native-firebase/auth',      // <-- Correcto
       [
         "expo-image-picker",
         {
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
       ]
+      // <-- AQUÍ ES DONDE BORRAMOS EL PLUGIN DE 'react-native-dotenv'
     ]
   }
 };

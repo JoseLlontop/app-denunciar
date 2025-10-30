@@ -2,16 +2,13 @@ import React, { useRef, useState, useEffect } from "react";
 import { View, ScrollView, KeyboardAvoidingView, Platform, Text, TouchableOpacity } from "react-native";
 import { Input, Icon, Button, Overlay, CheckBox } from "react-native-elements";
 import { useFormik } from "formik";
+
+import { auth } from "../../../utils/firebase";
 import {
-  getAuth,
   PhoneAuthProvider,
-  signInWithCredential,
   EmailAuthProvider,
-  linkWithCredential,
-  updateProfile,
-  RecaptchaVerifier,
-  createUserWithEmailAndPassword, // usado para asegurar proveedor email/clave si quisieras alternativa, pero aquí linkeamos
-} from "firebase/auth";
+} from "@react-native-firebase/auth"; // <--- Importado de @react-native-firebase/auth
+
 import { useNavigation } from "@react-navigation/native";
 import { screen } from "../../../utils";
 import { initialValues, validationSchema } from "./RegisterForm.data";
@@ -19,63 +16,20 @@ import { styles } from "./RegisterForm.styles";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../../context/AuthContext";
 import { apiFetch } from "../../../lib/apiClient";
-import {
-  API_BASE_URL,
-  FIREBASE_API_KEY,
-  FIREBASE_AUTH_DOMAIN,
-  FIREBASE_PROJECT_ID,
-  FIREBASE_STORAGE_BUCKET,
-  FIREBASE_MESSAGING_SENDER_ID,
-  FIREBASE_APP_ID,
-} from "@env";
+
+// Solo dejamos la que sí usas (API_BASE_URL)
+import { API_BASE_URL } from "@env";
 import { SmsCodeInput } from "../ModalSMS/SmsCodeInput";
 import { TermsModal } from "../TermsModal/TermsModal";
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false); // Estado para el checkbox
-  const [showTermsModal, setShowTermsModal] = useState(false); // Estado para el modal T&C
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const navigation = useNavigation();
   const { setAuthToken } = useAuth();
-  // Ref para el contenedor invisible del reCAPTCHA
-  const recaptchaContainerRef = useRef(null);
-  // Ref para guardar la instancia del verificador
-  const recaptchaVerifierRef = useRef(null);
 
-  // useEffect para inicializar el RecaptchaVerifier una vez
-  useEffect(() => {
-    const auth = getAuth();
-    // Asegúrate de que el contenedor exista antes de crear el verificador
-    if (recaptchaContainerRef.current) {
-      const verifier = new RecaptchaVerifier(auth, recaptchaContainerRef.current, { // Usa el ref del contenedor
-        size: 'invisible', // reCAPTCHA invisible
-        // Puedes agregar callbacks si necesitas manejar errores específicos del reCAPTCHA
-        // 'callback': (response) => { /* reCAPTCHA solved */ },
-        // 'expired-callback': () => { /* Response expired */ }
-      });
-
-      // Renderiza el verificador (importante!) y guarda la instancia en el ref
-      verifier.render().then((widgetId) => {
-         console.log("reCAPTCHA widget rendered, ID:", widgetId);
-         recaptchaVerifierRef.current = verifier; // Guarda la instancia
-      }).catch(error => {
-         console.error("Error rendering reCAPTCHA:", error);
-         Toast.show({ type: 'error', text1: 'Error inicializando reCAPTCHA' });
-         // Podrías deshabilitar el botón de submit aquí si falla
-      });
-
-      // Limpia el verificador cuando el componente se desmonte
-      return () => {
-        if (recaptchaVerifierRef.current) {
-          recaptchaVerifierRef.current.clear(); // Limpia la instancia de reCAPTCHA
-          recaptchaVerifierRef.current = null;
-        }
-      };
-    }
-  }, []); // El array vacío asegura que se ejecute solo una vez al montar
-
-  // reCAPTCHA + SMS
-  const recaptchaVerifier = useRef(null);
+  // Estado para el flujo SMS
   const [smsModalVisible, setSmsModalVisible] = useState(false);
   const [verificationId, setVerificationId] = useState(null);
   const [smsCode, setSmsCode] = useState("");
@@ -84,15 +38,6 @@ export function RegisterForm() {
 
   // Snapshot de datos antes de verificar
   const [pendingData, setPendingData] = useState(null);
-
-  const firebaseConfig = {
-    apiKey: FIREBASE_API_KEY,
-    authDomain: FIREBASE_AUTH_DOMAIN,
-    projectId: FIREBASE_PROJECT_ID,
-    storageBucket: FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
-    appId: FIREBASE_APP_ID,
-  };
 
   const handleCloseSmsModal = () => {
     setSmsModalVisible(false);
@@ -111,12 +56,8 @@ export function RegisterForm() {
     validationSchema: validationSchema(),
     validateOnChange: false,
     onSubmit: async (formValue, { setSubmitting }) => {
-      // Asegúrate que el verificador esté listo antes de intentar enviar SMS
-      if (!recaptchaVerifierRef.current) {
-        Toast.show({ type: "error", text1: "El verificador reCAPTCHA no está listo." });
-        setSubmitting(false);
-        return;
-      }
+      // 5. CAMBIO EN ONSUBMIT:
+      // Eliminada la comprobación de 'recaptchaVerifierRef.current'
 
       try {
         const { telefono } = formValue;
@@ -127,30 +68,33 @@ export function RegisterForm() {
         const phoneE164 = `+549${local10}`;
 
         setSendingSMS(true);
-        const auth = getAuth();
-        const provider = new PhoneAuthProvider(auth);
-
-        // *** Pasa la instancia del ref al verifyPhoneNumber ***
-        const vId = await provider.verifyPhoneNumber(phoneE164, recaptchaVerifierRef.current);
+        
+        // Usamos el mismo método nativo que LoginForm.
+        // Esto maneja SafetyNet/Play Integrity (Android) o APNs (iOS) automáticamente.
+        const confirmation = await auth.signInWithPhoneNumber(phoneE164);
+        
+        // Guardamos el verificationId del resultado de confirmación.
+        // Lo necesitamos para el 'confirmSmsCode'
+        const vId = confirmation.verificationId;
 
         // Guardamos datos del form para usarlos al confirmar el código
         setPendingData({
           ...formValue,
-          telefonoLocal10: local10, // lo que guardaremos en tu backend
-          telefonoE164: phoneE164,  // lo que usamos para Firebase
+          telefonoLocal10: local10, 
+          telefonoE164: phoneE164,
         });
 
         setVerificationId(vId);
         setSmsModalVisible(true);
       } catch (error) {
-        console.error("Error en onSubmit (SMS):", error); // Log más detallado
+        console.error("Error en onSubmit (SMS):", error);
+        // Los errores de 'captcha-check-failed' ya no aplican.
+        // Los nuevos errores serán como los de LoginForm (auth/too-many-requests, etc.)
         Toast.show({
           type: "error",
           position: "bottom",
           text1: "No se pudo enviar el SMS",
-          text2: error?.code === 'auth/captcha-check-failed'
-                 ? "Falló la verificación reCAPTCHA. Intenta de nuevo."
-                 : (error?.message ?? "Inténtalo más tarde"),
+          text2: (error?.message ?? "Inténtalo más tarde"),
         });
       } finally {
         setSendingSMS(false);
@@ -163,28 +107,28 @@ export function RegisterForm() {
 
   // Confirmación del código SMS
   const confirmSmsCode = async () => {
-    const auth = getAuth();
 
     if (!verificationId || !smsCode || !pendingData) {
       Toast.show({ type: "error", text1: "Faltan datos para verificar" });
       return;
     }
 
-    const { email, password, nombre, telefonoLocal10 /* , telefonoE164 */ } = pendingData;
+    const { email, password, nombre, telefonoLocal10 } = pendingData;
 
     try {
       setVerifyingCode(true);
 
-      // a) Verificar código: autentica usuario con proveedor "phone"
+      // a) Verificar código: (Esto estaba bien, solo la importación estaba mal)
       const phoneCred = PhoneAuthProvider.credential(verificationId, smsCode);
-      await signInWithCredential(auth, phoneCred);
+      await auth.signInWithCredential(phoneCred);
 
-      // b) Vincular email/contraseña a la misma cuenta
+      // b) Vincular email/contraseña: (Esto estaba bien, solo importación mal)
       const emailCred = EmailAuthProvider.credential(email, password);
-      await linkWithCredential(auth.currentUser, emailCred);
+      // CAMBIO: 'linkWithCredential' es un método de 'auth.currentUser'
+      await auth.currentUser.linkWithCredential(emailCred);
 
       // c) Perfil de Firebase (displayName)
-      await updateProfile(auth.currentUser, {
+      await auth.currentUser.updateProfile({
         displayName: nombre?.trim(),
       });
 
@@ -192,7 +136,7 @@ export function RegisterForm() {
       const token = await auth.currentUser.getIdToken(true);
       await setAuthToken(token);
 
-      // e) Backend: sync y PUT perfil
+      // e) Backend: sync y PUT perfil (Esto estaba bien)
       await apiFetch(`${API_BASE_URL}/usuarios/sync`, {
         method: "POST",
         body: { uid: auth.currentUser.uid, email },
@@ -202,7 +146,6 @@ export function RegisterForm() {
         method: "PUT",
         body: {
           nombre: nombre?.trim(),
-          // Guardamos en tu backend el local de 10 dígitos (como pediste)
           telefono: telefonoLocal10,
         },
       });
@@ -234,8 +177,6 @@ export function RegisterForm() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      {/* Contenedor invisible para reCAPTCHA */}
-      <View ref={recaptchaContainerRef} style={{ height: 0, width: 0 }} />
 
       <ScrollView keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
@@ -254,7 +195,7 @@ export function RegisterForm() {
             errorMessage={formik.errors.nombre}
           />
 
-          {/* Teléfono: EXACTAMENTE 10 dígitos (sin 0 / 15 / +54) */}
+          {/* Teléfono */}
           <Input
             placeholder="Teléfono (221453...)"
             containerStyle={styles.input}
@@ -264,7 +205,6 @@ export function RegisterForm() {
             maxLength={10}
             rightIcon={<Icon type="material-community" name="phone" iconStyle={styles.icon} />}
             onChangeText={(text) => {
-              // fuerza solo dígitos y hasta 10
               const digits = text.replace(/\D+/g, "").slice(0, 10);
               formik.setFieldValue("telefono", digits);
             }}
@@ -322,7 +262,7 @@ export function RegisterForm() {
             autoCapitalize="none"
           />
 
-          {/* ========= NUEVO: Checkbox Términos y Condiciones ========= */}
+          {/* Checkbox Términos y Condiciones */}
           <View style={styles.termsContainer}>
             <CheckBox
               checked={acceptTerms}
@@ -337,7 +277,6 @@ export function RegisterForm() {
               </Text>
             </TouchableOpacity>
           </View>
-          {/* ========================================================= */}
 
 
         <View style={styles.buttonContainer}>
@@ -358,18 +297,16 @@ export function RegisterForm() {
     {/* Modal para ingresar el código SMS */}
       <Overlay
         isVisible={smsModalVisible}
-        // Asigna la nueva función al presionar fuera del modal
         onBackdropPress={handleCloseSmsModal}
         overlayStyle={styles.smsOverlay}
       >
-        {/* Agrega el botón de cerrar aquí */}
         <View style={styles.closeButtonContainer}>
           <Icon
             type="material-community"
             name="close"
             onPress={handleCloseSmsModal}
             size={28}
-            color="#8e8e93" // Un color sutil para el ícono
+            color="#8e8e93" 
           />
         </View>
 
@@ -378,7 +315,6 @@ export function RegisterForm() {
           Ingresa el código de 6 dígitos que recibiste por SMS.
         </Text>
 
-        {/* Componente SMS */}
         <SmsCodeInput onCodeChange={setSmsCode} />
 
         <Button
@@ -390,12 +326,11 @@ export function RegisterForm() {
         />
       </Overlay>
 
-      {/* ========= Modal Términos y Condiciones ========= */}
+      {/* Modal Términos y Condiciones */}
       <TermsModal
         isVisible={showTermsModal}
         onClose={() => setShowTermsModal(false)}
       />
-      {/* ===================================================== */}
     </KeyboardAvoidingView>
   );
 }

@@ -2,14 +2,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { View, TouchableOpacity, ActivityIndicator, Text as RNText, StyleSheet } from "react-native";
 import { Input, Text, Icon } from "react-native-elements";
 import { useFormik } from "formik";
-import {
-  getAuth,
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  reload,
-} from "firebase/auth";
-import { getApp } from "firebase/app";
+
+import { auth } from "../../../utils/firebase"; 
+import { EmailAuthProvider } from "@react-native-firebase/auth"; 
+
 import { initialValues, validationSchema } from "./ChangePasswordForm.data";
 import { styles } from "./ChangePasswordForm.styles";
 
@@ -78,19 +74,17 @@ export function ChangePasswordForm({ onClose }) {
     validationSchema: validationSchema(),
     validateOnChange: false,
     onSubmit: async (values, { setSubmitting, setFieldError, resetForm }) => {
-      // ✅ Usa SIEMPRE la instancia de Auth del app ya inicializada
-      const auth = getAuth(getApp());
-      const currentUser = auth.currentUser;
+      
+      const currentUser = auth.currentUser; 
 
       if (!currentUser) {
         setBanner({ type: "error", title: "Sin sesión", text: "Iniciá sesión e intentá nuevamente." });
         setSubmitting(false);
-        return; // NO cerramos el modal en error
+        return; 
       }
 
-      // Refrescar datos antes de reautenticar (evita usar email/providerData obsoletos)
       try {
-        await reload(currentUser);
+        await currentUser.reload();
       } catch (e) {
         console.log("[ChangePasswordForm] reload error ->", e?.code, e?.message, e);
       }
@@ -110,25 +104,29 @@ export function ChangePasswordForm({ onClose }) {
         return; // NO cerramos el modal en error
       }
 
-      // 1) Reautenticar con la contraseña actual
+      // 1) Reautenticar
       try {
+        // 4. CAMBIO: 'EmailAuthProvider' se importa de '@react-native-firebase/auth'
         const credential = EmailAuthProvider.credential(currentUser.email || "", values.password);
-        await reauthenticateWithCredential(currentUser, credential);
+        
+        // 5. CAMBIO: 'reauthenticateWithCredential' es un método de 'currentUser'
+        await currentUser.reauthenticateWithCredential(credential);
+
       } catch (err) {
         console.log("[ChangePasswordForm] reauth error ->", err?.code, err?.message, err);
         const { field, message } = mapFirebaseError(err);
         if (field) setFieldError(field, message);
         setBanner({ type: "error", title: "No pudimos verificar tu identidad", text: message });
         setSubmitting(false);
-        return; // NO cerramos el modal en error
+        return; 
       }
 
       // 2) Actualizar contraseña
       try {
-        await updatePassword(currentUser, values.newPassword);
+        // 6. CAMBIO: 'updatePassword' es un método de 'currentUser'
+        await currentUser.updatePassword(values.newPassword);
         resetForm();
 
-        // ✅ ÉXITO: banner y cierre automático breve
         showBannerAndClose(
           { type: "success", title: "Contraseña actualizada", text: "Tu contraseña se cambió correctamente." },
           3000

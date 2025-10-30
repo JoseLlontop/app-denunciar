@@ -15,43 +15,36 @@ import { apiFetch } from '../../lib/apiClient';
 import { API_BASE_URL } from '@env';
 import Toast from 'react-native-toast-message';
 
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import storage from '@react-native-firebase/storage';
+
 import { v4 as uuid } from "uuid";
 
 export function DenunciaScreen() {
   const navigation = useNavigation();
 
-  // --- NUEVA FUNCIÓN HELPER ---
-  // Esta función se encarga de subir todas las imágenes (URIs locales)
-  // y devolver un array de URLs públicas de Firebase.
   const uploadImagesToFirebase = async (localUris) => {
     const uploadedUrls = [];
-    const storage = getStorage();
+    
+    // 2. CAMBIO: Obtenemos la instancia nativa
+    const storageInstance = storage();
 
-    // Usamos Promise.all para subir todas las imágenes en paralelo.
-    // Esto es mucho más rápido que subirlas una por una.
     await Promise.all(
       localUris.map(async (uri) => {
         try {
-          // 1. Convertir la URI local a un 'blob' (archivo)
-          const response = await fetch(uri);
-          const blob = await response.blob();
+          // 3. CAMBIO: 'ref()' es un método de la instancia 'storageInstance'
+          const storageRef = storageInstance.ref(`denuncias/${uuid()}`);
           
-          // 2. Crear una referencia única en Firebase Storage
-          const storageRef = ref(storage, `denuncias/${uuid()}`);
+          // 'putFile()' toma la URI local (ej: "file://...") directamente.
+          // No necesitamos 'fetch' ni 'blob'.
+          await storageRef.putFile(uri);
           
-          // 3. Subir el archivo
-          await uploadBytes(storageRef, blob);
+          // 5. CAMBIO: 'getDownloadURL()' es un método de 'storageRef'
+          const downloadUrl = await storageRef.getDownloadURL();
           
-          // 4. Obtener la URL de descarga pública
-          const downloadUrl = await getDownloadURL(storageRef);
-          
-          // 5. Agregarla a nuestro array de resultados
           uploadedUrls.push(downloadUrl);
 
         } catch (error) {
           console.error(`Error al subir imagen: ${uri}`, error);
-          // Si una imagen falla, hacemos que toda la promesa falle.
           throw new Error("Error al subir una de las imágenes.");
         }
       })
@@ -66,30 +59,29 @@ export function DenunciaScreen() {
     validationSchema: validationSchema(),
     onSubmit: async (values, helpers) => {
       try {
-        // 1. Primero, subimos las imágenes a Firebase.
-        // 'values.images' ahora es un array de URIs locales (ej: "file://...")
+        
+        // 1. Subimos las imágenes
         const finalImageUrls = await uploadImagesToFirebase(values.images);
 
         console.log('URLs finales de imágenes:', finalImageUrls);
         
-        // 2. Creamos el 'payload' para tu backend CON las URLs finales.
+        // 2. Creamos el 'payload'
         const payload = {
           titulo: values.title?.trim(),
           descripcion: values.description?.trim(),
           categoria: values.category,
           latitud: Number(values?.location?.latitude),
           longitud: Number(values?.location?.longitude),
-          //las URLs de Firebase para guardar en tu DB! - Con el nuevo backend descomento esto
           // imagenes: finalImageUrls, 
         };
 
-        // 3. Enviamos el 'payload' completo a tu API
+        // 3. Enviamos a la API
         await apiFetch(`${API_BASE_URL}/reclamos/`, {
           method: 'POST',
           body: payload,
         });
 
-        // 4. Limpiamos el formulario
+        // 4. Limpiamos y notificamos
         helpers.resetForm({ values: initialValues() });
 
         Toast.show({
@@ -107,7 +99,6 @@ export function DenunciaScreen() {
           type: 'error',
           position: 'bottom',
           text1: 'Error al crear la denuncia',
-          // El error ahora puede venir de la subida de imágenes o de tu API
           text2: 'Ocurrió un error al subir las imágenes o enviar el reclamo.',
         });
       } finally {
@@ -119,12 +110,11 @@ export function DenunciaScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        
+        {/* (Todo tu JSX estaba perfecto y no necesita cambios) */}
 
         <ImageBackground formik={formik} />
-
         <InfoForm formik={formik} />
-
-        {/* El componente hijo no necesita cambios en su JSX */}
         <UploadImagesForm formik={formik} /> 
 
         <Button
@@ -132,7 +122,6 @@ export function DenunciaScreen() {
           buttonStyle={styles.submitButton}
           containerStyle={styles.submitWrapper}
           onPress={formik.handleSubmit}
-          // 'isSubmitting' ahora se activa durante la subida de imágenes y durante el envío a tu API. ¡Perfecto!
           loading={formik.isSubmitting}
           disabled={formik.isSubmitting}
         />

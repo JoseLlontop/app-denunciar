@@ -1,13 +1,9 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { View, AppState } from "react-native";
-import { Text, Icon } from "react-native-elements"; // <-- Importar Icon
-import {
-  getAuth,
-  onAuthStateChanged,
-  onIdTokenChanged,
-  reload,
-} from "firebase/auth";
-import { getApp } from "firebase/app";
+import { Text, Icon } from "react-native-elements";
+
+import { auth } from "../../../utils/firebase"; 
+
 import { styles } from "./InfoUser.styles";
 
 /**
@@ -19,23 +15,22 @@ export function InfoUser({ autoRefreshMs = 5000, autoRefreshMax = 24 }) {
   const [user, setUser] = useState(null);
   const prevEmailRef = useRef(null);
 
-  // ... (hooks useEffect sin cambios) ...
-
-  // Guardamos el último email para detectar el cambio y cortar el polling
+  // ... (Este hook estaba bien) ...
   useEffect(() => {
     prevEmailRef.current = user?.email ?? null;
   }, [user?.email]);
 
   // Suscripciones Auth + estado inicial
   useEffect(() => {
-    const auth = getAuth(getApp());
+    // 2. CAMBIO: Usamos 'auth' importada. No más getAuth(getApp())
     setUser(auth.currentUser);
 
-    const unsubAuth = onAuthStateChanged(auth, (u) => {
+    // 3. CAMBIO: Son métodos de la instancia 'auth'
+    const unsubAuth = auth.onAuthStateChanged((u) => {
       setUser(u);
     });
 
-    const unsubToken = onIdTokenChanged(auth, (u) => {
+    const unsubToken = auth.onIdTokenChanged((u) => {
       setUser(u);
     });
 
@@ -43,17 +38,18 @@ export function InfoUser({ autoRefreshMs = 5000, autoRefreshMax = 24 }) {
       unsubAuth();
       unsubToken();
     };
-  }, []);
+  }, []); // Dependencia vacía está bien, solo se ejecuta al montar
 
   // Reload cuando la app vuelve al primer plano
   useEffect(() => {
     const sub = AppState.addEventListener("change", async (state) => {
       if (state === "active") {
-        const auth = getAuth(getApp());
+        // 4. CAMBIO: Usamos 'auth' importada
         if (auth.currentUser) {
           try {
-            await reload(auth.currentUser);
-            setUser(auth.currentUser);
+            // 5. CAMBIO: 'reload' es un método de 'currentUser'
+            await auth.currentUser.reload();
+            setUser(auth.currentUser); // Re-seteamos el usuario con los datos frescos
           } catch (e) {
             console.log("[InfoUser] reload on active ->", e?.code, e?.message);
           }
@@ -61,7 +57,7 @@ export function InfoUser({ autoRefreshMs = 5000, autoRefreshMax = 24 }) {
       }
     });
     return () => sub.remove();
-  }, []);
+  }, []); // Dependencia vacía está bien
 
   // Polling breve...
   useEffect(() => {
@@ -72,11 +68,10 @@ export function InfoUser({ autoRefreshMs = 5000, autoRefreshMax = 24 }) {
 
     const timer = setInterval(async () => {
       tries += 1;
-      const auth = getAuth(getApp());
       if (!auth.currentUser) return;
 
       try {
-        await reload(auth.currentUser);
+        await auth.currentUser.reload();
         if (!mounted) return;
 
         const refreshed = auth.currentUser;
@@ -96,14 +91,13 @@ export function InfoUser({ autoRefreshMs = 5000, autoRefreshMax = 24 }) {
       mounted = false;
       clearInterval(timer);
     };
-  }, [autoRefreshMs, autoRefreshMax]);
+    // Las dependencias están bien
+  }, [autoRefreshMs, autoRefreshMax]); 
 
 
-  // --- VISTA "SESIÓN REQUERIDA" (MODIFICADA) ---
   if (!user) {
     return (
       <View style={styles.card}>
-        {/* Icono para estado "no logueado" */}
         <View style={styles.iconContainer}>
           <Icon
             type="material-community"
@@ -122,10 +116,9 @@ export function InfoUser({ autoRefreshMs = 5000, autoRefreshMax = 24 }) {
     );
   }
 
-  // --- VISTA "LOGUEADO" (MODIFICADA) ---
+  // --- VISTA "LOGUEADO" (Estaba bien, no necesita cambios) ---
   return (
     <View style={styles.card}>
-      {/* Icono de usuario */}
       <View style={styles.iconContainer}>
         <Icon
           type="material-community"
@@ -139,7 +132,6 @@ export function InfoUser({ autoRefreshMs = 5000, autoRefreshMax = 24 }) {
         <Text style={styles.displayName}>{user.displayName || "Anónimo"}</Text>
         <Text style={styles.email}>{user.email}</Text>
         
-        {/* Nuevo: Estado de verificación */}
         {user.emailVerified ? (
           <Text style={[styles.verificationText, styles.verified]}>
             Email Verificado

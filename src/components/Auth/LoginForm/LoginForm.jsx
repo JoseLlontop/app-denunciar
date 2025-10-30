@@ -3,11 +3,7 @@ import { View, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-na
 import { Input, Icon, Button, Card, Text, Overlay } from 'react-native-elements'; 
 import { useFormik } from 'formik';
 
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  signInWithPhoneNumber 
-} from '@react-native-firebase/auth';
+import { auth } from '../../../utils/firebase'; 
 
 import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
@@ -37,8 +33,8 @@ export function LoginForm() {
     onSubmit: async (values) => {
       setLoading(true);
       try {
-        const auth = getAuth();
-        await signInWithEmailAndPassword(auth, values.email, values.password);
+
+        await auth.signInWithEmailAndPassword(values.email, values.password);
         
         await apiFetch(`${API_BASE_URL}/usuarios/login`, { method: "POST" });
         
@@ -88,8 +84,9 @@ export function LoginForm() {
       const fullPhoneNumber = `+549${phoneNumber}`;
       console.log(`[Login Teléfono] Número formateado: ${fullPhoneNumber}`);
 
-      const auth = getAuth();
-      const confirmation = await signInWithPhoneNumber(auth, fullPhoneNumber);
+      // 3. CAMBIO: Usamos la instancia 'auth' importada
+      // ELIMINADO: const auth = getAuth();
+      const confirmation = await auth.signInWithPhoneNumber(fullPhoneNumber);
       
       console.log("[Login Teléfono] SMS enviado, esperando confirmación.");
       setConfirmationResult(confirmation);
@@ -98,14 +95,14 @@ export function LoginForm() {
 
     } catch (error) {
       console.error("===== ERROR DETALLADO DE FIREBASE (Login Teléfono) =====");
-      console.error(error); // <--- ESTO ES LO MÁS IMPORTANTE
+      console.error(error); 
       console.error("Código de Error:", error.code);
       console.error("Mensaje de Error:", error.message);
       console.error("======================================================");
 
       let errorMsg = 'Error al enviar el SMS. Inténtalo de nuevo.';
       
-      // Manejo de errores específico basado en el código
+      // ... (El resto de tu manejo de errores está bien)
       if (error.code === 'auth/too-many-requests') {
         errorMsg = 'Bloqueo temporal. Demasiados intentos.';
       } else if (error.code === 'auth/invalid-phone-number') {
@@ -113,7 +110,6 @@ export function LoginForm() {
       } else if (error.code === 'auth/network-request-failed') {
         errorMsg = 'Error de red. Revisa tu conexión a internet.';
       } else if (error.message && error.message.toLowerCase().includes('app-not-authorized')) {
-        // Este es el error de SHA-1 o App Check que te mencioné
         errorMsg = 'App no autorizada. Revisa la config. SHA-1 y App Check.';
       } else if (error.code === 'auth/unknown') {
          errorMsg = 'Error desconocido. Revisa la consola de Metro.';
@@ -129,6 +125,8 @@ export function LoginForm() {
     
     setLoading(true);
     try {
+      // 4. ESTO ESTABA BIEN: confirmationResult.confirm() es la forma correcta
+      // de manejar la confirmación de SMS con @react-native-firebase
       await confirmationResult.confirm(smsCode);
       
       setIsSmsModalVisible(false);
@@ -151,7 +149,7 @@ export function LoginForm() {
     setLoading(false);
   };
 
-  // --- Vistas de Formulario (Sin cambios) ---
+  // --- Vistas de Formulario (No necesitan cambios) ---
   const renderEmailForm = () => (
     <>
       <Input
@@ -214,6 +212,7 @@ export function LoginForm() {
     </>
   );
 
+  // --- JSX principal (No necesita cambios) ---
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -280,4 +279,3 @@ export function LoginForm() {
     </KeyboardAvoidingView>
   );
 }
-
