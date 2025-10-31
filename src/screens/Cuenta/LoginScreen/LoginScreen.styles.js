@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   textRegister: {
-    marginBottom: 19,
+    marginBottom: 22,
     fontSize: 14,
     color: '#333',
   },

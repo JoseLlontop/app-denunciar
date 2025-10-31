@@ -54,34 +54,61 @@ export function DenunciaScreen() {
   };
 
 
-  const formik = useFormik({
+const formik = useFormik({
     initialValues: initialValues(),
     validationSchema: validationSchema(),
     onSubmit: async (values, helpers) => {
       try {
         
-        // 1. Subimos las imágenes
+        // 1. Subimos las imágenes a Firebase 
         const finalImageUrls = await uploadImagesToFirebase(values.images);
 
         console.log('URLs finales de imágenes:', finalImageUrls);
         
-        // 2. Creamos el 'payload'
+        // 2. Creamos el 'payload' para el reclamo 
         const payload = {
           titulo: values.title?.trim(),
           descripcion: values.description?.trim(),
           categoria: values.category,
           latitud: Number(values?.location?.latitude),
           longitud: Number(values?.location?.longitude),
-          // imagenes: finalImageUrls, 
         };
 
-        // 3. Enviamos a la API
-        await apiFetch(`${API_BASE_URL}/reclamos/`, {
+        // 3. Enviamos el reclamo principal a la API ahora capturamos la respuesta para obtener el ID
+        const nuevoReclamo = await apiFetch(`${API_BASE_URL}/reclamos/`, {
           method: 'POST',
           body: payload,
         });
 
-        // 4. Limpiamos y notificamos
+        // Verificamos si el backend devolvió el reclamo con su ID
+        if (!nuevoReclamo || !nuevoReclamo.id) {
+          throw new Error("El backend no devolvió un ID para el reclamo.");
+        }
+
+        // 4. Asociamos las imágenes al reclamo recién creado
+        // Solo lo intentamos si subimos imágenes y tenemos un ID
+        if (finalImageUrls.length > 0) {
+          
+          // Creamos una lista de promesas (una por cada imagen a registrar)
+          const promesasAsociacion = finalImageUrls.map(url => {
+            
+            const imagenPayload = {
+              url: url,
+              reclamo_id: nuevoReclamo.id // Usamos el ID del reclamo creado
+            };
+
+            // Usamos tu mismo apiFetch para la nueva ruta
+            return apiFetch(`${API_BASE_URL}/imagenes/`, {
+              method: 'POST',
+              body: imagenPayload,
+            });
+          });
+
+          // Esperamos a que todas las promesas de asociación se completen
+          await Promise.all(promesasAsociacion);
+        }
+
+        // 5. Limpiamos y notificamos 
         helpers.resetForm({ values: initialValues() });
 
         Toast.show({

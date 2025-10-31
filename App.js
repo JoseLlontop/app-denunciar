@@ -12,7 +12,8 @@ import { ReactNativeFirebaseAppCheckProvider, initializeAppCheck } from '@react-
 import { LogBox } from 'react-native';
 
 LogBox.ignoreLogs(['This method is deprecated']); 
-LogBox.ignoreLogs(['The app is running using the Legacy Architecture.']); 
+LogBox.ignoreLogs(['The app is running using the Legacy Architecture']); 
+LogBox.ignoreLogs(['Each child in a list should have a unique "key" prop']); 
 
 export default function App() {
     useEffect(() => {

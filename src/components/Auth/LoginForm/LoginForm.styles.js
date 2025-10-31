@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
     alignSelf: 'center',
-    marginVertical: 20,
+    marginVertical: 16,
   },
   content: {
     alignItems: 'center',
