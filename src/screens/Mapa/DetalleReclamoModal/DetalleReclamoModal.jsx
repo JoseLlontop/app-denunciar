@@ -10,11 +10,13 @@ import { getEstado } from '../../../lib/mapeoEstados';
 import { getIncidentes } from '../../../lib/mapeoIncidentes';
 import { styles } from './DetalleReclamoModal.styles';
 
-const screenWidth = Dimensions.get('window').width;
-const imageWidth = (screenWidth - 44) * 0.85; 
-const imageHeight = imageWidth * 0.75; 
+import { DetalleHistorialTab } from '../DetalleHistorialTab/DetalleHistorialTab'; 
 
-// InfoRow (Sin cambios)
+const screenWidth = Dimensions.get('window').width;
+const imageWidth = (screenWidth - 44) * 0.80; 
+const imageHeight = imageWidth * 0.65; 
+
+// InfoRow
 const InfoRow = ({ iconName, iconType, label, value }) => (
   <View style={styles.infoRow}>
     <View style={styles.infoIconContainer}>
@@ -27,7 +29,7 @@ const InfoRow = ({ iconName, iconType, label, value }) => (
   </View>
 );
 
-// ImageViewerModal 
+// ImageViewerModal
 const ImageViewerModal = ({ visible, imageUrl, onClose }) => (
   <RNModal 
     visible={visible} 
@@ -57,7 +59,6 @@ const ImagenesReclamo = ({ imagenes, onImagePress }) => {
   }
   return (
     <View style={styles.imageSectionContainer}>
-      <Text style={styles.imageSectionTitle}>Imágenes Registradas</Text>
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false} 
@@ -84,19 +85,54 @@ const ImagenesReclamo = ({ imagenes, onImagePress }) => {
   );
 };
 
+
+const TabSelector = ({ activeTab, onSelectTab }) => (
+  <View style={styles.tabContainer}>
+    <TouchableOpacity
+      style={[styles.tabButton, activeTab === 'detalles' && styles.tabButtonActive]}
+      onPress={() => onSelectTab('detalles')}
+    >
+      <Text style={[styles.tabButtonText, activeTab === 'detalles' && styles.tabButtonTextActive]}>
+        Detalles
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={[styles.tabButton, activeTab === 'historial' && styles.tabButtonActive]}
+      onPress={() => onSelectTab('historial')}
+    >
+      <Text style={[styles.tabButtonText, activeTab === 'historial' && styles.tabButtonTextActive]}>
+        Acciones
+      </Text>
+    </TouchableOpacity>
+  </View>
+);
+
+
 export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
   
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
+  
+  // --- NUEVO ESTADO PARA CONTROLAR LA PESTAÑA ACTIVA ---
+  const [activeTab, setActiveTab] = useState('detalles');
 
   const handleCloseViewer = () => {
     setImagenSeleccionada(null);
   };
 
+  // --- NUEVA FUNCIÓN: Al cerrar el modal, reseteamos a la pestaña de detalles ---
+  const handleCloseModal = () => {
+    onClose();
+    // Damos un pequeño delay para que no se vea el cambio antes de cerrar
+    setTimeout(() => {
+      setActiveTab('detalles'); 
+    }, 300); 
+  };
+
   return (
       <Modal
         isVisible={isVisible}
-        onBackdropPress={onClose}
-        onSwipeComplete={onClose}
+        onBackdropPress={handleCloseModal} // <-- Usamos la nueva función
+        onSwipeComplete={handleCloseModal} // <-- Usamos la nueva función
         swipeDirection="down"
         style={styles.modal}
         propagateSwipe={true}
@@ -105,43 +141,59 @@ export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
           <View style={styles.handleBar} />
           
           {reclamo && (
+            // Mantenemos el ScrollView principal para que todo el modal scrollee
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.title}>{reclamo.titulo}</Text>
               
-              <ImagenesReclamo 
-                imagenes={reclamo.imagenes}
-                onImagePress={setImagenSeleccionada}
-              />
+              {/* --- 1. AGREGAMOS EL SELECTOR DE PESTAÑAS --- */}
+              <TabSelector activeTab={activeTab} onSelectTab={setActiveTab} />
+
+              {/* --- 2. RENDERIZADO CONDICIONAL DEL CONTENIDO --- */}
               
-              <Text style={styles.description}>{reclamo.descripcion}</Text>
-              
-              {/* Bloque de InfoRows */}
-              <InfoRow
-                iconName="format-list-bulleted"
-                label="Categoría"
-                value={getIncidentes(reclamo.categoria)}
-              />
-              <InfoRow
-                iconName="progress-check"
-                label="Estado"
-                value={getEstado(reclamo.estado)}
-              />
-              <InfoRow
-                iconName="calendar-range"
-                label="Fecha de Creación"
-                value={new Date(reclamo.fecha_creacion).toLocaleDateString()}
-              />
-              {/* --- Se eliminó el InfoRow de 'Ubicación' --- */}
-              <InfoRow
-                iconName="star-outline"
-                label="Calificación Promedio"
-                value={Number(reclamo.promedio_calificacion).toFixed(1)}
-              />
-              <InfoRow
-                iconName="shield-check-outline"
-                label="Confiabilidad"
-                value={`${Number(reclamo.confiabilidad_calculada).toFixed(0)} %`}
-              />
+              {/* VISTA 1: DETALLES (Tu contenido anterior) */}
+              {activeTab === 'detalles' && (
+                <View>
+                  <Text style={styles.title}>{reclamo.titulo}</Text>
+                  
+                  <ImagenesReclamo 
+                    imagenes={reclamo.imagenes}
+                    onImagePress={setImagenSeleccionada}
+                  />
+                  
+                  <Text style={styles.description}>{reclamo.descripcion}</Text>
+                  
+                  {/* Bloque de InfoRows */}
+                  <InfoRow
+                    iconName="format-list-bulleted"
+                    label="Categoría"
+                    value={getIncidentes(reclamo.categoria)}
+                  />
+                  <InfoRow
+                    iconName="progress-check"
+                    label="Estado"
+                    value={getEstado(reclamo.estado)}
+                  />
+                  <InfoRow
+                    iconName="calendar-range"
+                    label="Fecha de Creación"
+                    value={new Date(reclamo.fecha_creacion).toLocaleDateString()}
+                  />
+                  <InfoRow
+                    iconName="star-outline"
+                    label="Calificación Promedio"
+                    value={Number(reclamo.promedio_calificacion).toFixed(1)}
+                  />
+                  <InfoRow
+                    iconName="shield-check-outline"
+                    label="Confiabilidad"
+                    value={`${Number(reclamo.confiabilidad_calculada).toFixed(0)} %`}
+                  />
+                </View>
+              )}
+
+              {/* VISTA 2: HISTORIAL (El nuevo componente) */}
+              {activeTab === 'historial' && (
+                <DetalleHistorialTab historiales={reclamo.historiales} />
+              )}
 
             </ScrollView>
           )}
@@ -155,4 +207,3 @@ export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
       </Modal>
   );
 }
-

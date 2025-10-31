@@ -11,7 +11,7 @@ export const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'white',
-    paddingHorizontal: 22,
+    paddingHorizontal: 36,
     paddingTop: 12,
     paddingBottom: 30,
     borderTopRightRadius: 20,
@@ -19,7 +19,6 @@ export const styles = StyleSheet.create({
     
     // --- ¡ESTE ES EL CAMBIO DE ALTURA! ---
     maxHeight: screenHeight * 1, // Antes era 0.85
-    // --- ---------------------------- ---
   },
   handleBar: {
     width: 40,
@@ -30,8 +29,6 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   
-  // (El resto de los estilos no cambian)
-  // ...
   title: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -114,5 +111,36 @@ export const styles = StyleSheet.create({
   lightboxImage: {
     width: screenWidth,         
     height: screenHeight * 0.8, 
+  },
+
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    padding: 4,
+    marginBottom: 18, // Espacio antes del contenido de la pestaña
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabButtonActive: {
+    backgroundColor: '#ffffff', // Fondo blanco cuando está activo
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  tabButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#555',
+  },
+  tabButtonTextActive: {
+    color: '#00a680', // Color primario cuando está activo
   },
 });
