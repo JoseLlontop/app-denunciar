@@ -9,15 +9,17 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { LoadingModal } from '../../components/Shared/LoadingModal';
 import { API_BASE_URL } from '@env';
 import axios from 'axios';
-import Modal from 'react-native-modal';
+
+// Componentes y utilidades importadas
 import { getEstado } from "../../lib/mapeoEstados";
 import { getIncidentes } from "../../lib/mapeoIncidentes";
+import { DetalleReclamoModal } from './DetalleReclamoModal/DetalleReclamoModal';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Definición de opciones de filtro
+// Definición de opciones de filtro 
 const ESTADOS_FILTRO = [
   { dbValue: 'todos', legible: 'Todos' },
   { dbValue: 'pendiente', legible: getEstado('pendiente') },
@@ -41,20 +43,16 @@ export function MapaDenunciaScreen() {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
-  // NUEVO: Estado para el filtro de categoría
+  // Estados de filtro (sin cambios)
   const [filtroCategoria, setFiltroCategoria] = useState('todos');
-
-  // 1. Inicia el filtro en 'todos' para la carga inicial
   const [filtroEstado, setFiltroEstado] = useState('todos');
-
-  // 2. Flag para controlar el seteo del filtro por defecto
   const [isInitialFilterSet, setIsInitialFilterSet] = useState(false);
   
-  // Estado para controlar el redibujado de marcadores (soluciona parpadeo)
+  // Estado de tracking (sin cambios)
   const [isTrackingChanges, setIsTrackingChanges] = useState(true);
 
+  // fetchReclamos y useFocusEffect (sin cambios)
   const fetchReclamos = useCallback(async () => {
-    // 1. Activa el tracking antes de cargar datos
     setIsTrackingChanges(true); 
     setLoading(true);
     try {
@@ -75,16 +73,13 @@ export function MapaDenunciaScreen() {
     }, [fetchReclamos])
   );
 
-  // Lógica de filtrado con useMemo (AHORA COMBINADA)
+  // Lógica de filtrado y efectos (sin cambios)
   const reclamosFiltrados = useMemo(() => {
     let reclamosTemp = reclamos;
 
-    // 1. Aplicar filtro de estado
     if (filtroEstado !== 'todos') {
       reclamosTemp = reclamosTemp.filter(reclamo => reclamo.estado === filtroEstado);
     }
-
-    // 2. Aplicar filtro de categoría sobre el resultado anterior
     if (filtroCategoria !== 'todos') {
       reclamosTemp = reclamosTemp.filter(reclamo => reclamo.categoria === filtroCategoria);
     }
@@ -92,71 +87,53 @@ export function MapaDenunciaScreen() {
     return reclamosTemp;
   }, [reclamos, filtroEstado, filtroCategoria]); 
 
-  // 2. Efecto para desactivar el tracking después de un redibujado
   useEffect(() => {
     if (isTrackingChanges) {
-      // Damos un tiempo para que el mapa renderice los cambios
       const timer = setTimeout(() => {
         setIsTrackingChanges(false);
-      }, 500); // 500ms es un valor seguro
-
+      }, 500);
       return () => clearTimeout(timer);
     }
-  }, [isTrackingChanges]); // Se ejecuta cada vez que isTrackingChanges se pone en 'true'
+  }, [isTrackingChanges]);
 
-  // 3. useEffect para aplicar el filtro por defecto ('resuelto') después de la carga
   useEffect(() => {
-    // Si hay reclamos cargados y aún no hemos seteado el filtro inicial...
     if (reclamos.length > 0 && !isInitialFilterSet) {
-      
-      // Activa el tracking para el cambio de filtro
       setIsTrackingChanges(true); 
-      
-      // Aplica el filtro 'resuelto'
       setFiltroEstado('resuelto');
-      
-      // Marca que el filtro inicial ya fue aplicado
       setIsInitialFilterSet(true);
     }
-  }, [reclamos, isInitialFilterSet]); // Depende de 'reclamos' y del flag
+  }, [reclamos, isInitialFilterSet]);
 
 
+  // handleMarkerPress (sin cambios en su lógica)
   const handleMarkerPress = async (reclamoId) => {
     setModalVisible(true);
     setIsDetailLoading(true);
-    setSelectedReclamo(null);
+    setSelectedReclamo(null); // Limpia el reclamo anterior
     try {
       const { data } = await api.get(`/reclamos/${reclamoId}`);
       setSelectedReclamo(data);
     } catch (error) {
       console.error("Error al obtener detalle del reclamo:", error);
-      setModalVisible(false);
+      setModalVisible(false); // Cierra si hay error
     } finally {
       setIsDetailLoading(false);
     }
   };
 
+  // closeModal (AHORA TAMBIÉN LIMPIA EL ESTADO)
   const closeModal = () => {
     setModalVisible(false);
+    // Limpiamos el estado al cerrar para que no se vea
+    // la data anterior la próxima vez que se abra.
+    setSelectedReclamo(null); 
   };
 
   const showFab = !authLoading && !!user;
 
-  const InfoRow = ({ iconName, iconType, label, value }) => (
-    <View style={styles.infoRow}>
-      <View style={styles.infoIconContainer}>
-        <Icon type={iconType || 'material-community'} name={iconName} size={22} color="#00a680" />
-      </View>
-      <View style={styles.infoTextContainer}>
-        <Text style={styles.infoLabel}>{label}</Text>
-        <Text style={styles.infoValue}>{value}</Text>
-      </View>
-    </View>
-  );
-
   return (
       <View style={styles.container}>
-        {/* 4. MODIFICADO: UI DEL FILTRO (AÑADIDA SEGUNDA BARRA) */}
+        {/* UI de Filtros (sin cambios) */}
         <View style={styles.filterContainer}>
           {/* FILTRO 1: ESTADOS */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollView}>
@@ -165,19 +142,13 @@ export function MapaDenunciaScreen() {
               return (
                 <TouchableOpacity
                   key={filtro.dbValue}
-                  style={[
-                    styles.filterButton,
-                    isActive && styles.filterButtonActive,
-                  ]}
+                  style={[ styles.filterButton, isActive && styles.filterButtonActive ]}
                   onPress={() => {
                     setIsTrackingChanges(true); 
                     setFiltroEstado(filtro.dbValue);
                   }}
                 >
-                  <Text style={[
-                    styles.filterButtonText,
-                    isActive && styles.filterButtonTextActive,
-                  ]}>
+                  <Text style={[ styles.filterButtonText, isActive && styles.filterButtonTextActive ]}>
                     {filtro.legible}
                   </Text>
                 </TouchableOpacity>
@@ -188,23 +159,17 @@ export function MapaDenunciaScreen() {
           {/* FILTRO 2: CATEGORÍAS  */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScrollView}>
             {CATEGORIAS_FILTRO.map((filtro) => {
-              const isActive = filtro.dbValue === filtroCategoria; // <- Usa estado de categoría
+              const isActive = filtro.dbValue === filtroCategoria;
               return (
                 <TouchableOpacity
                   key={filtro.dbValue}
-                  style={[
-                    styles.filterButton,
-                    isActive && styles.filterButtonActive,
-                  ]}
+                  style={[ styles.filterButton, isActive && styles.filterButtonActive ]}
                   onPress={() => {
                     setIsTrackingChanges(true); 
-                    setFiltroCategoria(filtro.dbValue); // <- Usa set de categoría
+                    setFiltroCategoria(filtro.dbValue);
                   }}
                 >
-                  <Text style={[
-                    styles.filterButtonText,
-                    isActive && styles.filterButtonTextActive,
-                  ]}>
+                  <Text style={[ styles.filterButtonText, isActive && styles.filterButtonTextActive ]}>
                     {filtro.legible}
                   </Text>
                 </TouchableOpacity>
@@ -213,6 +178,7 @@ export function MapaDenunciaScreen() {
           </ScrollView>
         </View>
 
+        {/* MapView y Marcadores */}
         <MapView
           provider={PROVIDER_GOOGLE}
           style={styles.map}
@@ -223,10 +189,8 @@ export function MapaDenunciaScreen() {
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
-          // 5. MODIFICADO: mapPadding aumentado para dar espacio a la nueva barra de filtros
           mapPadding={{ top: Platform.OS === 'ios' ? 170 : 140, right: 0, bottom: 0, left: 0 }}
         >
-          {/* MAPA USA AHORA los reclamos FILTRADOS */}
           {reclamosFiltrados.map((reclamo) => (
             <Marker
               key={reclamo.id}
@@ -247,6 +211,7 @@ export function MapaDenunciaScreen() {
         ))}
       </MapView>
 
+      {/* FAB */}
       {showFab && (
         <TouchableOpacity
           style={styles.fab}
@@ -263,41 +228,17 @@ export function MapaDenunciaScreen() {
         </TouchableOpacity>
       )}
 
-      <Modal
+      {/* Usamos el nuevo componente */}
+      <DetalleReclamoModal 
         isVisible={isModalVisible}
-        onBackdropPress={closeModal}
-        onSwipeComplete={closeModal}
-        swipeDirection="down"
-        style={styles.modal}
-        onModalWillHide={() => setSelectedReclamo(null)}
-      >
-        <View style={styles.modalContent}>
-          <View style={styles.handleBar} />
-          {selectedReclamo && (
-            <>
-              <Text style={styles.title}>{selectedReclamo.titulo}</Text>
-              <Text style={styles.description}>{selectedReclamo.descripcion}</Text>
-              <InfoRow
-                iconName="format-list-bulleted"
-                label="Categoría"
-                value={getIncidentes(selectedReclamo.categoria)}
-              />
-              <InfoRow
-                iconName="progress-check"
-                label="Estado"
-                value={getEstado(selectedReclamo.estado)}
-              />
-              <InfoRow
-                iconName="calendar-range"
-                label="Fecha de Creación"
-                value={new Date(selectedReclamo.fecha_creacion).toLocaleDateString()}
-              />
-            </>
-          )}
-        </View>
-      </Modal>
+        reclamo={selectedReclamo}
+        onClose={closeModal}
+      />
 
+      {/* Los LoadingModal siguen aquí, ya que son parte de la UI de esta pantalla */}
       <LoadingModal show={loading && !isModalVisible} text="Actualizando denuncias..." />
+      
+      {/* Este LoadingModal se encarga de la carga *del detalle* */}
       <LoadingModal show={isDetailLoading} text="Cargando detalles..." />
     </View>
   );
