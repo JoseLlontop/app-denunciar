@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#fff",
     overflow: "hidden",
-    marginVertical: 2,
+    marginVertical: 0,
   },
 
   // Cada fila (list item) en layout row

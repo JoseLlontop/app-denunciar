@@ -29,8 +29,8 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 3,
-    marginTop: 14,
-    marginBottom: 6,
+    marginTop: 10,
+    marginBottom: 0,
     borderWidth: 1,
     borderColor: "#eee",
   },
@@ -52,7 +52,7 @@ export const styles = StyleSheet.create({
   /* Wrapper del botón de logout */
   logoutWrapper: {
     width: width * 0.95,
-    marginTop: 8,
+    marginTop: 0,
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: "#fff",
@@ -76,7 +76,7 @@ export const styles = StyleSheet.create({
 
   /* Botón base */
   btnTouchable: {
-    paddingVertical: 18,
+    paddingVertical: 16,
     paddingHorizontal: 15,
     alignItems: "center",
     justifyContent: "center",

@@ -3,6 +3,7 @@ import { View, TouchableOpacity, Text } from "react-native";
 import { Modal } from "../Shared/Modal";
 import { ChangeDisplayNameForm } from "./ChangeDisplayNameForm";
 import { ChangeEmailForm } from "./ChangeEmailForm";
+import { ChangePhoneForm } from "./ChangePhoneForm";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { styles } from "./AccountOptions.styles";
@@ -27,6 +28,11 @@ export function AccountOptions({ onReload }) {
         return <ChangeDisplayNameForm onClose={onCloseModal} onReload={onReload} />;
       case "email":
         return <ChangeEmailForm onClose={onCloseModal} onReload={onReload} />;
+      
+      // <<< NUEVO: Añadimos el case para "phone"
+      case "phone":
+        return <ChangePhoneForm onClose={onCloseModal} onReload={onReload} />;
+
       case "password":
         return <ChangePasswordForm onClose={onCloseModal} />;
       default:
@@ -95,6 +101,16 @@ function getMenuOptions(selectedComponent) {
       iconColorRight: "#bdbdbd",
       onPress: () => selectedComponent("email"),
     },
+    
+    {
+      id: "phone",
+      title: "Cambiar Teléfono",
+      iconNameLeft: "phone", // Icono de teléfono
+      iconColorLeft: "#00a680",
+      iconColorRight: "#bdbdbd",
+      onPress: () => selectedComponent("phone"),
+    },
+    
     {
       id: "password",
       title: "Cambiar contraseña",

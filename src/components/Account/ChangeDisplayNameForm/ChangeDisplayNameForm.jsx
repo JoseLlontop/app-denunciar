@@ -42,7 +42,7 @@ export function ChangeDisplayNameForm({ onClose, onReload }) {
         Toast.show({
           type: "success",
           position: "bottom",
-          text1: "Nombre actualizado correctamente",
+          text1: "Tu perfil se actualizará cuando vuelvas a iniciar sesión.",
         });
         
         onReload?.();

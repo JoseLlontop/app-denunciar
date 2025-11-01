@@ -20,7 +20,8 @@ export const styles = StyleSheet.create({
     // Sombra Android
     elevation: 4,
     alignSelf: "center",
-    marginVertical: 10,
+    marginBottom: 10,
+    marginTop: 8,
   },
 
   // --- NUEVO ---
