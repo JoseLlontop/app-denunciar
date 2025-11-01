@@ -245,7 +245,7 @@ export function LoginForm() {
           <Button
             title="Confirmar código"
             containerStyle={{ marginTop: 20 }}
-            buttonStyle={styles.buttonSMS}
+            buttonStyle={[styles.buttonSMS]}
             onPress={handleConfirmSmsCode}
             loading={loading}
             disabled={smsCode.length !== 6}

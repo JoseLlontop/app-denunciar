@@ -192,7 +192,7 @@ export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
 
               {/* VISTA 2: HISTORIAL (El nuevo componente) */}
               {activeTab === 'historial' && (
-                <DetalleHistorialTab historiales={reclamo.historiales} />
+                <DetalleHistorialTab reclamo = {reclamo} />
               )}
 
             </ScrollView>
