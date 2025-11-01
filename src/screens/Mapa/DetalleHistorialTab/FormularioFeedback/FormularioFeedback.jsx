@@ -9,7 +9,7 @@ import {
 import { Icon } from 'react-native-elements';
 import Toast from 'react-native-toast-message';
 
-import { styles } from './FormularioFeedback.styles'; // Estilos propios
+import { styles } from './FormularioFeedback.styles'; 
 import { apiFetch } from '../../../../lib/apiClient';
 import { API_BASE_URL } from '@env';
 
@@ -17,7 +17,7 @@ import { API_BASE_URL } from '@env';
 const StarRating = ({ rating, setRating }) => (
   <View style={styles.starContainer}>
     {[1, 2, 3, 4, 5].map((star) => (
-      <TouchableOpacity key={star} onPress={() => setRating(star)}>
+      <TouchableOpacity key={star} onPress={() => setRating(prev => (prev === star ? 0 : star))}>
         <Icon 
           type="material-community" 
           name={star <= rating ? "star" : "star-outline"}
@@ -74,14 +74,6 @@ export function FormularioFeedback({ reclamoId }) {
 
   // --- MANEJADORES ---
   const handleSaveFeedback = useCallback(async () => {
-    if (existe === null) {
-      Alert.alert("Falta información", "Por favor, indica si el reclamo 'Existe' o 'No Existe'."); 
-      return;
-    }
-    if (calidad === 0) {
-      Alert.alert("Falta información", "Por favor, califica la solución (de 1 a 5 estrellas)."); 
-      return;
-    }
 
     setSubmitting(true); 
     
@@ -136,7 +128,7 @@ export function FormularioFeedback({ reclamoId }) {
       <View style={styles.buttonGroup}>
         <TouchableOpacity 
           style={[styles.feedbackButton, existe === true && styles.feedbackButtonActive]}
-          onPress={() => setExiste(true)}
+          onPress={() => setExiste(prev => (prev === true ? null : true))}
         >
           <Icon name="check" type="material-community" color={existe === true ? '#fff' : '#4CAF50'} size={20} />
           <Text style={[styles.feedbackButtonText, existe === true && styles.feedbackButtonTextActive]}>
@@ -145,7 +137,7 @@ export function FormularioFeedback({ reclamoId }) {
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.feedbackButton, existe === false && styles.feedbackButtonActive]}
-          onPress={() => setExiste(false)}
+          onPress={() => setExiste(prev => (prev === false ? null : false))}
         >
           <Icon name="close" type="material-community" color={existe === false ? '#fff' : '#F44336'} size={20} />
           <Text style={[styles.feedbackButtonText, existe === false && styles.feedbackButtonTextActive]}>
