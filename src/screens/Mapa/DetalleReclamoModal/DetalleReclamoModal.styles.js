@@ -117,12 +117,12 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#f0f0f0',
     borderRadius: 10,
-    padding: 4,
+    padding: 6,
     marginBottom: 18, // Espacio antes del contenido de la pestaña
   },
   tabButton: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',

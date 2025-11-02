@@ -48,7 +48,7 @@ export const styles = StyleSheet.create({
 
   // --- Paginador de Historial ---
   historialPaginatorContainer: {
-    marginBottom: 14,
+    marginBottom: 15,
   },
   paginatorControls: {
     flexDirection: 'row',

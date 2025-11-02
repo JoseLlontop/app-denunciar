@@ -101,7 +101,7 @@ const TabSelector = ({ activeTab, onSelectTab }) => (
       onPress={() => onSelectTab('historial')}
     >
       <Text style={[styles.tabButtonText, activeTab === 'historial' && styles.tabButtonTextActive]}>
-        Acciones
+        Seguimiento
       </Text>
     </TouchableOpacity>
   </View>
