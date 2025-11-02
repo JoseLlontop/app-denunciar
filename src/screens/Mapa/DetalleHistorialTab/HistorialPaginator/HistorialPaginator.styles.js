@@ -41,7 +41,8 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 10,
+    marginBottom: 32,
     fontStyle: 'italic',
   },
 

@@ -114,17 +114,17 @@ export const styles = StyleSheet.create({
   modalBtnDanger: { backgroundColor: DANGER },
   modalBtnDangerText: { color: "#fff", fontWeight: "700" },
 
-  // Acentos por categoría (borde izquierdo)
-  accentAlumbrado: { borderLeftColor: "#22c55e" },
-  accentBaches: { borderLeftColor: "#0ea5e9" },
-  accentResiduos: { borderLeftColor: "#f59e0b" },
-  accentOtro: { borderLeftColor: "#94a3b8" },
+// Acentos por categoría (borde izquierdo)
+  accentAlumbrado: { borderLeftColor: "#eab308" }, // Amarillo
+  accentBaches: { borderLeftColor: "#0ea5e9" }, // Celeste (se mantiene)
+  accentResiduos: { borderLeftColor: "#1f2937" }, // Negro/Gris oscuro
+  accentOtro: { borderLeftColor: "#1f2937" }, // Negro/Gris oscuro
 
   // Tags por categoría
-  tagAlumbrado: { backgroundColor: "#ecfdf5", borderColor: "#bbf7d0" },
-  tagBaches: { backgroundColor: "#eef2ff", borderColor: "#c7d2fe" },
-  tagResiduos: { backgroundColor: "#fff7ed", borderColor: "#fed7aa" },
-  tagOtro: { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0" },
+  tagAlumbrado: { backgroundColor: "#fefce8", borderColor: "#fde68a" }, // Tonos amarillos claros
+  tagBaches: { backgroundColor: "#f0f9ff", borderColor: "#bae6fd" }, // Tonos celestes (ajustado para uniformidad)
+  tagResiduos: { backgroundColor: "#f3f4f6", borderColor: "#d1d5db" }, // Tonos grises claros
+  tagOtro: { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0" }, // Tonos grises claros (mantenido)
 
   // Error box
   errorBox: { backgroundColor: "#fef2f2", borderColor: "#fecaca", borderWidth: 1, padding: 14, borderRadius: 12, marginBottom: 12 },

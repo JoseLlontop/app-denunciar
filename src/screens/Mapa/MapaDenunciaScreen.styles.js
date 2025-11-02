@@ -11,8 +11,7 @@ const colors = {
   black: '#000',
 };
 
-// --- NUEVO ESTILO: "Light with Enhanced Contrast" ---
-// Mantiene un tema claro pero con calles y elementos mucho más definidos.
+// ---"Light with Enhanced Contrast" ---
 export const customMapStyle = [
   {
     elementType: 'geometry',
@@ -119,7 +118,7 @@ export const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(0, 166, 128, 0.2)',
+    // backgroundColor: 'rgba(0, 166, 128, 0.2)', // <-- ELIMINADO
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -127,7 +126,7 @@ export const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: colors.primary,
+    // backgroundColor: colors.primary, // <-- ELIMINADO
     alignItems: 'center',
     justifyContent: 'center',
   },

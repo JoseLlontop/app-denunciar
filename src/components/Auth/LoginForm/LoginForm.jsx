@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { Input, Icon, Button, Card, Text, Overlay } from 'react-native-elements'; 
 import { useFormik } from 'formik';
 
@@ -242,14 +242,32 @@ export function LoginForm() {
           
           <SmsCodeInput onCodeChange={setSmsCode} />
           
-          <Button
-            title="Confirmar código"
-            containerStyle={{ marginTop: 20 }}
-            buttonStyle={[styles.buttonSMS]}
+          <TouchableOpacity
+            // El containerStyle original se aplica aquí.
+            // Añadí width: '100%' para que coincida con el comportamiento
+            // de los otros botones que usan 'styles.btnContainer'.
+            style={{ marginTop: 20, width: '100%' }}
+            
+            // El onPress se mantiene igual
             onPress={handleConfirmSmsCode}
-            loading={loading}
-            disabled={smsCode.length !== 6}
-          />
+
+            // Deshabilita el touch si el código no es válido O si está cargando
+            disabled={loading || smsCode.length !== 6}
+            
+            // Esto controla el efecto visual al presionar
+            activeOpacity={0.7} 
+          >
+            {/* Este View usa el estilo de tu botón verde */}
+            <View style={styles.btn}>
+              {loading ? (
+                // Si está cargando, muestra el spinner
+                <ActivityIndicator size="small" color="#ffffff" />
+              ) : (
+                // Si no, muestra el texto
+                <Text style={styles.btnTitle}>Confirmar código</Text>
+              )}
+            </View>
+          </TouchableOpacity>
         </View>
       </Overlay>
 

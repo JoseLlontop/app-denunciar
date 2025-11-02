@@ -39,11 +39,6 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  btn: {
-    backgroundColor: '#00a680',
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
   btnTitle: {
     fontSize: 16,
     fontWeight: '700',
@@ -85,4 +80,20 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
   },
+  // --- ESTILOS PARA EL BOTÓN DESHABILITADO ---
+  btnDisabled: {
+    backgroundColor: '#00a680', // Un verde más claro y opaco
+  },
+  btnDisabledTitle: {
+    color: '#333' // Mantenemos el texto blanco
+  },
+  btn: {
+  backgroundColor: '#00a680',
+  paddingVertical: 14,
+  borderRadius: 12,
+  // --- AÑADE ESTAS DOS LÍNEAS ---
+  alignItems: 'center',
+  justifyContent: 'center',
+  // --- ---
+},
 });
