@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { View, ScrollView, KeyboardAvoidingView, Platform, Text, TouchableOpacity } from "react-native";
+import { View, ScrollView, KeyboardAvoidingView, Platform, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Input, Icon, Button, Overlay, CheckBox } from "react-native-elements";
 import { useFormik } from "formik";
 
@@ -317,13 +317,19 @@ export function RegisterForm() {
 
         <SmsCodeInput onCodeChange={setSmsCode} />
 
-        <Button
-          title={verifyingCode ? "Verificando..." : "Confirmar código"}
+        <TouchableOpacity
           onPress={confirmSmsCode}
-          loading={verifyingCode}
-          buttonStyle={[styles.buttonSMS, { marginTop: 8 }]}
-          disabled={smsCode.length !== 6}
-        />
+          disabled={verifyingCode || smsCode.length !== 6}
+          activeOpacity={0.7} 
+        >
+          <View style={[styles.buttonSMS, { marginTop: 8 }]}>
+            {verifyingCode ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text style={styles.buttonTitle}>Confirmar código</Text>
+            )}
+          </View>
+        </TouchableOpacity>
       </Overlay>
 
       {/* Modal Términos y Condiciones */}

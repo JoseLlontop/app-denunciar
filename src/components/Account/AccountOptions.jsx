@@ -95,7 +95,7 @@ function getMenuOptions(selectedComponent) {
     },
     {
       id: "email",
-      title: "Cambiar Email",
+      title: "Cambiar o Verificar Email",
       iconNameLeft: "at",
       iconColorLeft: "#00a680",
       iconColorRight: "#bdbdbd",

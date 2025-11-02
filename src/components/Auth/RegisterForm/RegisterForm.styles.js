@@ -121,5 +121,14 @@ export const styles = StyleSheet.create({
   buttonTitleDisabled: {
     color: '#ffffff', // Mantenemos el texto blanco sobre el fondo verde pálido
   },
+  
+  warningText: {
+    marginTop: 15,
+    marginHorizontal: 10,
+    fontSize: 14,
+    color: '#666', // Un color más suave
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
 
 });
