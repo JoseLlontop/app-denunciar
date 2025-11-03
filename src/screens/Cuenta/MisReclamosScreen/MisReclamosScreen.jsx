@@ -7,20 +7,21 @@ import {
   TouchableOpacity,
   RefreshControl,
   Modal,
-  StyleSheet, // Import StyleSheet para los estilos dinámicos del texto del badge
+  StyleSheet,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import Icon from "react-native-vector-icons/Ionicons"; 
+import Icon from "react-native-vector-icons/Ionicons";
+// --- FIREBASE STORAGE ---
+import storage from "@react-native-firebase/storage";
 import { styles } from "./MisReclamosScreen.styles";
 
 import { apiFetch } from "../../../lib/apiClient";
 import { API_BASE_URL } from "@env";
 import { LoadingModal } from "../../../components/Shared/LoadingModal/LoadingModal";
-import { getEstado } from '../../../lib/mapeoEstados'; 
+import { getEstado } from '../../../lib/mapeoEstados';
 import { getIncidentes } from "../../../lib/mapeoIncidentes";
 
 // --- Helpers ---
-
 function extractStatus(error) {
   if (!error?.message) return null;
   const m = error.message.match(/HTTP\s+(\d{3})/i);
@@ -37,7 +38,6 @@ const formatFecha = (iso) => {
 };
 
 // --- Componente de Item (memoizado para performance) ---
-
 const ReclamoItem = React.memo(({ item, requestDelete }) => {
   const categoriaAccentStyle = (categoria) => {
     switch (categoria) {
@@ -88,13 +88,12 @@ const ReclamoItem = React.memo(({ item, requestDelete }) => {
         <Text style={styles.cardTitle} numberOfLines={2}>{item?.titulo || "Sin título"}</Text>
         <View style={styles.cardRight}>
           <View style={estadoStyle.container}>
-            {/* Funcion para mapear el nombre de los estaods */}
             <Text style={[styles.badgeText, estadoStyle.text]}>
               {getEstado(item?.estado)}
             </Text>
           </View>
           <TouchableOpacity
-            onPress={() => requestDelete(item)}
+            onPress={() => requestDelete(item)} // Pasa el item completo
             style={styles.deleteBtn}
             accessibilityRole="button"
             accessibilityLabel="Eliminar Reclamo"
@@ -123,7 +122,6 @@ const ReclamoItem = React.memo(({ item, requestDelete }) => {
 
 
 // --- Componente Principal ---
-
 export function MisReclamosScreen() {
   const [reclamos, setReclamos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -131,7 +129,7 @@ export function MisReclamosScreen() {
   const [error, setError] = useState(null);
 
   const [confirmVisible, setConfirmVisible] = useState(false);
-  const [toDelete, setToDelete] = useState(null);
+  const [toDelete, setToDelete] = useState(null); // Ahora guardará el objeto completo
 
   const loadData = useCallback(async () => {
     try {
@@ -155,18 +153,55 @@ export function MisReclamosScreen() {
     await loadData();
   }, [loadData]);
 
+  // Guardamos el item completo para tener acceso a su array de 'imagenes'
   const requestDelete = useCallback((item) => {
-    setToDelete({ id: item?.id, titulo: item?.titulo });
+    setToDelete(item); // item completo
     setConfirmVisible(true);
   }, []);
 
+  // Lógica de borrado en cascada
   const handleDelete = async () => {
     if (!toDelete?.id) return;
+
     try {
+      const imagenesDelReclamo = toDelete.imagenes || [];
+
+      // 1. Borrar imágenes de la API del Backend (DELETE /imagenes/{id})
+      if (imagenesDelReclamo.length > 0) {
+        console.log(`Borrando ${imagenesDelReclamo.length} imágenes de la API...`);
+        const deleteApiPromises = imagenesDelReclamo.map((img) =>
+          apiFetch(`${API_BASE_URL}/imagenes/${img.id}`, { method: "DELETE" })
+        );
+        // Usamos allSettled para que no se detenga si una falla
+        await Promise.allSettled(deleteApiPromises);
+      }
+
+      // 2. Borrar archivos de Firebase Storage
+      if (imagenesDelReclamo.length > 0) {
+        console.log(`Borrando ${imagenesDelReclamo.length} archivos de Firebase Storage...`);
+        const storageInstance = storage();
+        const deleteStoragePromises = imagenesDelReclamo.map((img) => {
+          try {
+            // refFromURL toma la URL completa y obtiene la referencia del archivo
+            return storageInstance.refFromURL(img.url).delete();
+          } catch (storageError) {
+            console.warn(`Error al obtener referencia de storage para ${img.url}:`, storageError);
+            return Promise.resolve(); // No detener la ejecución
+          }
+        });
+        await Promise.allSettled(deleteStoragePromises);
+      }
+
+      // 3. Borrar el reclamo principal de la API (DELETE /reclamos/{id})
+      console.log(`Borrando reclamo principal ID: ${toDelete.id}...`);
       await apiFetch(`${API_BASE_URL}/reclamos/${toDelete.id}`, { method: "DELETE" });
+
+      // 4. Actualizar la UI
       setReclamos((prev) => prev.filter((r) => r.id !== toDelete.id));
       Toast.show({ type: "success", position: "bottom", text1: "Reclamo Eliminado!" });
+
     } catch (e) {
+      console.error("Error en el proceso de eliminación:", e);
       const code = extractStatus(e);
       let msg =
         code === 403
@@ -219,6 +254,7 @@ export function MisReclamosScreen() {
         />
       </View>
 
+      {/* --- Modal --- */}
       <Modal
         visible={confirmVisible}
         transparent
@@ -230,6 +266,7 @@ export function MisReclamosScreen() {
             <Text style={styles.modalTitle}>Eliminar Reclamo</Text>
             <Text style={styles.modalMessage}>
               ¿Seguro que querés eliminar{" "}
+              {/* Sigue funcionando porque 'toDelete' es el objeto completo */}
               <Text style={styles.modalMessageStrong}>“{toDelete?.titulo || "este reclamo"}”</Text>
               ? Esta acción no se puede deshacer.
             </Text>
