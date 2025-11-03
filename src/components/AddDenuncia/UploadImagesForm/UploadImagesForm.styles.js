@@ -32,8 +32,8 @@ export const styles = StyleSheet.create({
     marginBottom: 0, // Keep bottom margin
   },
   addButton: {
-    width: 72,
-    height: 72,
+    width: 84,
+    height: 84,
     borderRadius: 10, // Match thumbnail radius
     backgroundColor: "#f0fdfa", // Very light green
     justifyContent: "center",
@@ -57,8 +57,8 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
   },
   imageStyle: {
-    width: 72,
-    height: 72,
+    width: 84,
+    height: 84,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#e6e6e6", // Light gray border
@@ -147,9 +147,11 @@ export const styles = StyleSheet.create({
   // Estilo Botón Secundario (Cancelar)
   modalBtnSecondary: {
     backgroundColor: "#e2e8f0",
+    //color: "#222",
   },
   modalBtnSecondaryText: {
     fontWeight: "700",
+    color: "#222"
   },
   
   // Estilo Botón Peligro (Eliminar)
