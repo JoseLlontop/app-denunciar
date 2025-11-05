@@ -17,8 +17,8 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
     
-    // --- ¡ESTE ES EL CAMBIO DE ALTURA! ---
-    maxHeight: screenHeight * 1, // Antes era 0.85
+    maxHeight: screenHeight * 1, // Mantenemos tu cambio
+    minHeight: screenHeight * 0.4, // Altura mínima para el loader inicial
   },
   handleBar: {
     width: 40,
@@ -29,6 +29,29 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   
+  // --- Loader "inline" ---
+  inlineLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,166,128,0.05)',
+    marginBottom: 10,
+  },
+  inlineLoadingText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#00a680',
+    fontWeight: '500',
+  },
+  
+  fullLoadingContainer: {
+    height: screenHeight * 0.4, // Ocupa la altura mínima
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   title: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -118,7 +141,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     borderRadius: 10,
     padding: 6,
-    marginBottom: 18, // Espacio antes del contenido de la pestaña
+    marginBottom: 18, 
   },
   tabButton: {
     flex: 1,
@@ -128,7 +151,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabButtonActive: {
-    backgroundColor: '#ffffff', // Fondo blanco cuando está activo
+    backgroundColor: '#ffffff', 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -141,6 +164,6 @@ export const styles = StyleSheet.create({
     color: '#555',
   },
   tabButtonTextActive: {
-    color: '#00a680', // Color primario cuando está activo
+    color: '#00a680', 
   },
 });

@@ -1,7 +1,8 @@
-import React, { useState } from 'react'; 
+import React, { useState, useEffect, useCallback, useRef } from 'react'; // Importamos useRef
 import { 
   View, Text, ScrollView, Image, Dimensions, 
-  TouchableOpacity, Modal as RNModal, SafeAreaView 
+  TouchableOpacity, Modal as RNModal, SafeAreaView,
+  ActivityIndicator
 } from 'react-native';
 import { Icon } from 'react-native-elements';
 import Modal from 'react-native-modal';
@@ -10,13 +11,19 @@ import { getEstado } from '../../../lib/mapeoEstados';
 import { getIncidentes } from '../../../lib/mapeoIncidentes';
 import { styles } from './DetalleReclamoModal.styles';
 
-import { DetalleHistorialTab } from '../DetalleHistorialTab/DetalleHistorialTab'; 
+import { DetalleHistorialTab } from '../DetalleHistorialTab/DetalleHistorialTab';
+
+// Importamos los helpers de API 
+import { apiFetch } from '../../../lib/apiClient'; 
+import { API_BASE_URL } from '@env';
 
 const screenWidth = Dimensions.get('window').width;
 const imageWidth = (screenWidth - 44) * 0.80; 
 const imageHeight = imageWidth * 0.65; 
 
-// InfoRow
+// --- Componentes Internos (InfoRow, ImageViewerModal, ImagenesReclamo, TabSelector) ---
+
+// InfoRow 
 const InfoRow = ({ iconName, iconType, label, value }) => (
   <View style={styles.infoRow}>
     <View style={styles.infoIconContainer}>
@@ -29,7 +36,7 @@ const InfoRow = ({ iconName, iconType, label, value }) => (
   </View>
 );
 
-// ImageViewerModal
+// ImageViewerModal 
 const ImageViewerModal = ({ visible, imageUrl, onClose }) => (
   <RNModal 
     visible={visible} 
@@ -85,7 +92,7 @@ const ImagenesReclamo = ({ imagenes, onImagePress }) => {
   );
 };
 
-
+// TabSelector 
 const TabSelector = ({ activeTab, onSelectTab }) => (
   <View style={styles.tabContainer}>
     <TouchableOpacity
@@ -108,31 +115,77 @@ const TabSelector = ({ activeTab, onSelectTab }) => (
 );
 
 
+// --- Componente Principal ---
+
 export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
   
   const [imagenSeleccionada, setImagenSeleccionada] = useState(null);
-  
-  // --- NUEVO ESTADO PARA CONTROLAR LA PESTAÑA ACTIVA ---
   const [activeTab, setActiveTab] = useState('detalles');
+  const [reclamoData, setReclamoData] = useState(null);
+  const [isLoadingDetalles, setIsLoadingDetalles] = useState(false);
+  
+  // --- Usamos un Ref para rastrear la pestaña ANTERIOR ---
+  const prevActiveTabRef = useRef('detalles');
+
+  // --- Efecto para setear datos iniciales ---
+  // Sincroniza el estado local y resetea el ref de la pestaña
+  useEffect(() => {
+    if (reclamo) {
+      setReclamoData(reclamo);
+      // Resetea el tracker de pestaña a 'detalles'
+      prevActiveTabRef.current = 'detalles'; 
+    }
+  }, [reclamo]); 
+
+  // --- Función para re-fetchear los detalles  ---
+  const fetchReclamoDetalle = useCallback(async () => {
+    if (!reclamoData?.id) return; 
+
+    setIsLoadingDetalles(true);
+    try {
+      const data = await apiFetch(`${API_BASE_URL}/reclamos/${reclamoData.id}`);
+      setReclamoData(data); 
+    } catch (error) {
+      console.error("Error al refrescar el reclamo:", error);
+    } finally {
+      setIsLoadingDetalles(false);
+    }
+  }, [reclamoData?.id]);
+
+  // --- Efecto para disparar el fetch al cambiar de tab ---
+  useEffect(() => {
+    
+    // Comparamos la pestaña actual con la *anterior* (guardada en el ref)
+    if (activeTab === 'detalles' && prevActiveTabRef.current === 'historial') {
+      // Si estamos en 'detalles' y venimos de 'historial', refrescamos.
+      fetchReclamoDetalle();
+    }
+    
+    // Actualizamos el ref con la pestaña actual para la próxima comparación
+    prevActiveTabRef.current = activeTab;
+
+  }, [activeTab, fetchReclamoDetalle]); // Dependencias: la pestaña y la función
+
 
   const handleCloseViewer = () => {
     setImagenSeleccionada(null);
   };
 
-  // --- NUEVA FUNCIÓN: Al cerrar el modal, reseteamos a la pestaña de detalles ---
+  // --- handleCloseModal ---
   const handleCloseModal = () => {
     onClose();
-    // Damos un pequeño delay para que no se vea el cambio antes de cerrar
     setTimeout(() => {
       setActiveTab('detalles'); 
+      setReclamoData(null); 
+      prevActiveTabRef.current = 'detalles'; // Reseteamos el ref al cerrar
     }, 300); 
   };
 
   return (
       <Modal
         isVisible={isVisible}
-        onBackdropPress={handleCloseModal} // <-- Usamos la nueva función
-        onSwipeComplete={handleCloseModal} // <-- Usamos la nueva función
+        onBackdropPress={handleCloseModal}
+        onSwipeComplete={handleCloseModal}
         swipeDirection="down"
         style={styles.modal}
         propagateSwipe={true}
@@ -140,62 +193,69 @@ export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
         <View style={styles.modalContent}>
           <View style={styles.handleBar} />
           
-          {reclamo && (
-            // Mantenemos el ScrollView principal para que todo el modal scrollee
+          {reclamoData ? ( 
             <ScrollView showsVerticalScrollIndicator={false}>
               
-              {/* --- 1. AGREGAMOS EL SELECTOR DE PESTAÑAS --- */}
               <TabSelector activeTab={activeTab} onSelectTab={setActiveTab} />
 
-              {/* --- 2. RENDERIZADO CONDICIONAL DEL CONTENIDO --- */}
-              
-              {/* VISTA 1: DETALLES (Tu contenido anterior) */}
+              {/* VISTA 1: DETALLES */}
               {activeTab === 'detalles' && (
                 <View>
-                  <Text style={styles.title}>{reclamo.titulo}</Text>
+                  {/* Indicador de carga sobre los detalles */}
+                  {isLoadingDetalles && (
+                    <View style={styles.inlineLoadingContainer}>
+                      <ActivityIndicator size="small" color="#00a680" />
+                      <Text style={styles.inlineLoadingText}>Actualizando...</Text>
+                    </View>
+                  )}
+
+                  <Text style={styles.title}>{reclamoData.titulo}</Text>
                   
                   <ImagenesReclamo 
-                    imagenes={reclamo.imagenes}
+                    imagenes={reclamoData.imagenes}
                     onImagePress={setImagenSeleccionada}
                   />
                   
-                  <Text style={styles.description}>{reclamo.descripcion}</Text>
+                  <Text style={styles.description}>{reclamoData.descripcion}</Text>
                   
-                  {/* Bloque de InfoRows */}
                   <InfoRow
                     iconName="format-list-bulleted"
                     label="Categoría"
-                    value={getIncidentes(reclamo.categoria)}
+                    value={getIncidentes(reclamoData.categoria)}
                   />
                   <InfoRow
                     iconName="progress-check"
                     label="Estado"
-                    value={getEstado(reclamo.estado)}
+                    value={getEstado(reclamoData.estado)}
                   />
                   <InfoRow
                     iconName="calendar-range"
                     label="Fecha de Creación"
-                    value={new Date(reclamo.fecha_creacion).toLocaleDateString()}
+                    value={new Date(reclamoData.fecha_creacion).toLocaleDateString()}
                   />
                   <InfoRow
                     iconName="star-outline"
                     label="Calificación Promedio"
-                    value={Number(reclamo.promedio_calificacion).toFixed(1)}
+                    value={Number(reclamoData.promedio_calificacion).toFixed(1)}
                   />
                   <InfoRow
                     iconName="shield-check-outline"
                     label="Confiabilidad"
-                    value={`${Number(reclamo.confiabilidad_calculada).toFixed(0)} %`}
+                    value={`${Number(reclamoData.confiabilidad_calculada).toFixed(0)} %`}
                   />
                 </View>
               )}
 
-              {/* VISTA 2: HISTORIAL (El nuevo componente) */}
+              {/* VISTA 2: SEGUIMIENTO */}
               {activeTab === 'historial' && (
-                <DetalleHistorialTab reclamo = {reclamo} />
+                <DetalleHistorialTab reclamo={reclamoData} />
               )}
 
             </ScrollView>
+          ) : (
+             <View style={styles.inlineLoadingContainer}>
+                <ActivityIndicator size="large" color="#00a680" />
+             </View>
           )}
 
           <ImageViewerModal
