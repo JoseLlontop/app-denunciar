@@ -31,6 +31,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 5,        // Padding ligeramente reducido
     borderBottomWidth: Platform.OS === 'android' ? 0 : StyleSheet.hairlineWidth,
     borderBottomColor: 'transparent',
+    paddingLeft: 14,
   },
   icon: {
     color: '#8e8e93',
@@ -93,11 +94,12 @@ export const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 8,
     marginHorizontal: -10, // Compensa el padding negativo del input
+    marginLeft: 0,
   },
   checkboxContainer: {
     padding: 0,
     margin: 0,
-    marginRight: 8, // Espacio entre check y texto
+    marginRight: 6, // Espacio entre check y texto
     backgroundColor: 'transparent',
     borderWidth: 0,
   },

@@ -292,8 +292,10 @@ const localStyles = StyleSheet.create({
   feedbackTitle: {
     fontWeight: "700",
     marginBottom: 2,
+    color: "#212121",
   },
   feedbackText: {
     opacity: 0.9,
+    color: "#212121", 
   },
 });

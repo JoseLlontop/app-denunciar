@@ -302,7 +302,6 @@ export function MapaDenunciaScreen() {
         onClose={closeModal}
       />
       <LoadingModal show={loading && !isModalVisible} text="Actualizando denuncias..." />
-      <LoadingModal show={isDetailLoading} text="Cargando detalles..." />
     </View>
   );
 }

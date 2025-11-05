@@ -5,7 +5,7 @@ const { height } = Dimensions.get("window");
 export const styles = StyleSheet.create({
   overlay: {
     width: "90%",
-    height: height * 0.75, // Ocupa el 75% de la altura
+    height: height * 0.84 , // Ocupa el 75% de la altura
     padding: 20,
     borderRadius: 12,
     backgroundColor: "#ffffff",

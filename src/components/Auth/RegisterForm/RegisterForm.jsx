@@ -272,7 +272,7 @@ export function RegisterForm() {
             />
             <TouchableOpacity onPress={() => setShowTermsModal(true)}>
               <Text style={styles.termsText}>
-                Acepto{" "}
+              Acepto{" "}
                 <Text style={styles.termsLink}>Términos y Condiciones</Text>
               </Text>
             </TouchableOpacity>

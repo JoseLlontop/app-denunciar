@@ -191,6 +191,7 @@ export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
         propagateSwipe={true}
       >
         <View style={styles.modalContent}>
+          
           <View style={styles.handleBar} />
           
           {reclamoData ? ( 
@@ -254,7 +255,8 @@ export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
             </ScrollView>
           ) : (
              <View style={styles.inlineLoadingContainer}>
-                <ActivityIndicator size="large" color="#00a680" />
+                 <ActivityIndicator size="small" color="#00a680" />
+                 <Text style={styles.inlineLoadingText}>Cargando detalles...</Text>
              </View>
           )}
 

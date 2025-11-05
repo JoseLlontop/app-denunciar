@@ -42,7 +42,7 @@ export function AppNavigation() {
   // Estilo global para dar “gutter” lateral y que los íconos no queden pegados a las esquinas
   const COMMON_TAB_BAR_STYLE = {
     paddingHorizontal: 42, 
-    height: 70,
+    height: 74,
     paddingTop: 0,
     borderTopWidth: 0.5,
     borderTopColor: '#e5e5e5',
