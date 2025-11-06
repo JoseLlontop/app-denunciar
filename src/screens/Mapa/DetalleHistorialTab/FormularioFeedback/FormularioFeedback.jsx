@@ -30,7 +30,7 @@ const StarRating = ({ rating, setRating }) => (
   </View>
 );
 
-export function FormularioFeedback({ reclamoId }) {
+export function FormularioFeedback({ reclamoId, estado }) {
   // --- ESTADOS ---
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -53,7 +53,8 @@ export function FormularioFeedback({ reclamoId }) {
         if (feedbackActual) {
           setMiFeedback(feedbackActual); 
           setExiste(feedbackActual.existe); 
-          setCalidad(feedbackActual.calidad_solucion || 0); 
+          // Solo setear calidad si el estado es resuelto, sino, mantener en 0
+          setCalidad(estado === 'resuelto' ? (feedbackActual.calidad_solucion || 0) : 0); 
           setSuscripcion(feedbackActual.suscripcion || false); 
         } else {
           setMiFeedback(null); 
@@ -70,7 +71,7 @@ export function FormularioFeedback({ reclamoId }) {
     };
 
     fetchMiFeedback();
-  }, [reclamoId]); 
+  }, [reclamoId, estado]); // Agregamos 'estado' a las dependencias
 
   // --- MANEJADORES ---
   const handleSaveFeedback = useCallback(async () => {
@@ -80,7 +81,8 @@ export function FormularioFeedback({ reclamoId }) {
     const body = {
       reclamo_id: reclamoId,
       existe: existe,
-      calidad_solucion: calidad,
+      // Si el estado no es resuelto, forzamos calidad a 0 en el envío
+      calidad_solucion: estado === 'resuelto' ? calidad : 0,
       suscripcion: suscripcion,
     }; 
 
@@ -110,7 +112,7 @@ export function FormularioFeedback({ reclamoId }) {
     } finally {
       setSubmitting(false); 
     }
-  }, [reclamoId, miFeedback, existe, calidad, suscripcion]); 
+  }, [reclamoId, miFeedback, existe, calidad, suscripcion, estado]); // Agregamos 'estado'
 
   // --- RENDER ---
   if (loading) {
@@ -146,9 +148,26 @@ export function FormularioFeedback({ reclamoId }) {
         </TouchableOpacity>
       </View> 
 
-      {/* Rating de Calidad */}
-      <Text style={styles.actionLabel}>Califica la calidad de la solución (1-5)</Text> 
-      <StarRating rating={calidad} setRating={setCalidad} /> 
+      {/* Rating de Calidad (Condicional) */}
+      {estado === 'resuelto' ? (
+        <>
+          <Text style={styles.actionLabel}>Califica la calidad de la solución (1-5)</Text> 
+          <StarRating rating={calidad} setRating={setCalidad} /> 
+        </>
+      ) : (
+        <View style={styles.infoBox}>
+          <Icon 
+            type="material-community" 
+            name="lock-outline" 
+            color={styles.infoText.color} 
+            size={22} 
+          />
+          <Text style={styles.infoText}>
+            Podrás calificar la calidad de la solución cuando el reclamo esté resuelto.
+          </Text>
+        </View>
+      )}
+
 
       {/* Botón de Suscripción */}
       <TouchableOpacity 

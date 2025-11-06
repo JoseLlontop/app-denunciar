@@ -67,6 +67,27 @@ export const styles = StyleSheet.create({
   star: {
     marginHorizontal: 6,
   },
+  
+  // --- NUEVOS ESTILOS ---
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 20,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginLeft: 14,
+    lineHeight: 20, // Mejorar legibilidad
+  },
+  // --- FIN NUEVOS ESTILOS ---
+
   suscripcionButton: {
     flexDirection: 'row',
     alignItems: 'center',

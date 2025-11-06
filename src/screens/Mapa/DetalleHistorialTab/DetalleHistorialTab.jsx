@@ -14,7 +14,7 @@ import { useAuth } from '../../../context/AuthContext'; // Ajusta esta ruta si e
 
 export function DetalleHistorialTab({ reclamo }) {
   // Extraemos los datos que cada componente necesita
-  const { historiales, id: reclamoId } = reclamo; 
+  const { historiales, id: reclamoId, estado } = reclamo; 
 
   // Obtenemos el usuario del contexto de autenticación
   const { user } = useAuth();
@@ -41,7 +41,7 @@ export function DetalleHistorialTab({ reclamo }) {
       */}
       {user ? (
         // El usuario ESTÁ logueado
-        <FormularioFeedback reclamoId={reclamoId} />
+        <FormularioFeedback reclamoId={reclamoId} estado={estado}/>
       ) : (
         // El usuario NO ESTÁ logueado
         <View style={styles.loginRequiredContainer}>
