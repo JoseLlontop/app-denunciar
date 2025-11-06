@@ -141,7 +141,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     borderRadius: 10,
     padding: 6,
-    marginBottom: 18, 
+    marginBottom: 16, 
   },
   tabButton: {
     flex: 1,
@@ -165,5 +165,27 @@ export const styles = StyleSheet.create({
   },
   tabButtonTextActive: {
     color: '#00a680', 
+  },
+
+  // --- NUEVOS ESTILOS PARA BOTONES DE SCROLL ---
+  scrollButtonContainer: {
+    position: 'absolute',
+    bottom: 58, // Se alinea con el paddingBottom original del modalContent
+    right: 18,   // Un poco de espacio desde el borde
+    zIndex: 10,  // Aseguramos que esté por encima del contenido
+  },
+  scrollButton: {
+    backgroundColor: 'rgba(0, 166, 128, 0.85)', // Color del tema, semi-transparente
+    width: 40,
+    height: 40,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16, // Espacio entre los dos botones
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
 });

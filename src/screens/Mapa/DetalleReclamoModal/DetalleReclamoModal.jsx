@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'; // Importamos useRef
+import React, { useState, useEffect, useCallback, useRef } from 'react'; // useRef ya estaba importado
 import { 
   View, Text, ScrollView, Image, Dimensions, 
   TouchableOpacity, Modal as RNModal, SafeAreaView,
@@ -124,15 +124,14 @@ export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
   const [reclamoData, setReclamoData] = useState(null);
   const [isLoadingDetalles, setIsLoadingDetalles] = useState(false);
   
-  // --- Usamos un Ref para rastrear la pestaña ANTERIOR ---
+  // --- Refs ---
   const prevActiveTabRef = useRef('detalles');
+  const mainScrollRef = useRef(null); // <-- Ref para el ScrollView principal
 
   // --- Efecto para setear datos iniciales ---
-  // Sincroniza el estado local y resetea el ref de la pestaña
   useEffect(() => {
     if (reclamo) {
       setReclamoData(reclamo);
-      // Resetea el tracker de pestaña a 'detalles'
       prevActiveTabRef.current = 'detalles'; 
     }
   }, [reclamo]); 
@@ -154,17 +153,11 @@ export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
 
   // --- Efecto para disparar el fetch al cambiar de tab ---
   useEffect(() => {
-    
-    // Comparamos la pestaña actual con la *anterior* (guardada en el ref)
     if (activeTab === 'detalles' && prevActiveTabRef.current === 'historial') {
-      // Si estamos en 'detalles' y venimos de 'historial', refrescamos.
       fetchReclamoDetalle();
     }
-    
-    // Actualizamos el ref con la pestaña actual para la próxima comparación
     prevActiveTabRef.current = activeTab;
-
-  }, [activeTab, fetchReclamoDetalle]); // Dependencias: la pestaña y la función
+  }, [activeTab, fetchReclamoDetalle]); 
 
 
   const handleCloseViewer = () => {
@@ -177,9 +170,21 @@ export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
     setTimeout(() => {
       setActiveTab('detalles'); 
       setReclamoData(null); 
-      prevActiveTabRef.current = 'detalles'; // Reseteamos el ref al cerrar
+      prevActiveTabRef.current = 'detalles';
+      // Reseteamos el scroll al cerrar
+      mainScrollRef.current?.scrollTo({ y: 0, animated: false }); 
     }, 300); 
   };
+
+  // --- Funciones de Scroll Manual ---
+  const handleScrollToBottom = () => {
+    mainScrollRef.current?.scrollToEnd({ animated: true });
+  };
+
+  const handleScrollToTop = () => {
+    mainScrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
 
   return (
       <Modal
@@ -188,71 +193,91 @@ export function DetalleReclamoModal({ isVisible, reclamo, onClose }) {
         onSwipeComplete={handleCloseModal}
         swipeDirection="down"
         style={styles.modal}
-        propagateSwipe={true}
+        propagateSwipe={true} // Mantenemos esto, pero nuestros botones ayudarán
       >
         <View style={styles.modalContent}>
           
           <View style={styles.handleBar} />
           
           {reclamoData ? ( 
-            <ScrollView showsVerticalScrollIndicator={false}>
-              
-              <TabSelector activeTab={activeTab} onSelectTab={setActiveTab} />
+            <>
+              <ScrollView 
+                ref={mainScrollRef} // <-- Asignamos el Ref aquí
+                showsVerticalScrollIndicator={false}
+              >
+                
+                <TabSelector activeTab={activeTab} onSelectTab={setActiveTab} />
 
-              {/* VISTA 1: DETALLES */}
+                {/* VISTA 1: DETALLES */}
+                {activeTab === 'detalles' && (
+                  <View>
+                    {/* Indicador de carga sobre los detalles */}
+                    {isLoadingDetalles && (
+                      <View style={styles.inlineLoadingContainer}>
+                        <ActivityIndicator size="small" color="#00a680" />
+                        <Text style={styles.inlineLoadingText}>Actualizando...</Text>
+                      </View>
+                    )}
+
+                    <Text style={styles.title}>{reclamoData.titulo}</Text>
+                    
+                    <ImagenesReclamo 
+                      imagenes={reclamoData.imagenes}
+                      onImagePress={setImagenSeleccionada}
+                    />
+                    
+                    <Text style={styles.description}>{reclamoData.descripcion}</Text>
+                    
+                    <InfoRow
+                      iconName="format-list-bulleted"
+                      label="Categoría"
+                      value={getIncidentes(reclamoData.categoria)}
+                    />
+                    <InfoRow
+                      iconName="progress-check"
+                      label="Estado"
+                      value={getEstado(reclamoData.estado)}
+                    />
+                    <InfoRow
+                      iconName="calendar-range"
+                      label="Fecha de Creación"
+                      value={new Date(reclamoData.fecha_creacion).toLocaleDateString()}
+                    />
+                    <InfoRow
+                      iconName="star-outline"
+                      label="Calificación Promedio"
+                      value={Number(reclamoData.promedio_calificacion).toFixed(1)}
+                    />
+                    <InfoRow
+                      iconName="shield-check-outline"
+                      label="Confiabilidad"
+                      value={`${Number(reclamoData.confiabilidad_calculada).toFixed(0)} %`}
+                    />
+                  </View>
+                )}
+
+                {/* VISTA 2: SEGUIMIENTO */}
+                {activeTab === 'historial' && (
+                  <DetalleHistorialTab reclamo={reclamoData} />
+                )}
+                
+
+              </ScrollView>
+
+              {/*
+                Botones de Scroll Manual (Solo en Detalles) 
+              */}
               {activeTab === 'detalles' && (
-                <View>
-                  {/* Indicador de carga sobre los detalles */}
-                  {isLoadingDetalles && (
-                    <View style={styles.inlineLoadingContainer}>
-                      <ActivityIndicator size="small" color="#00a680" />
-                      <Text style={styles.inlineLoadingText}>Actualizando...</Text>
-                    </View>
-                  )}
-
-                  <Text style={styles.title}>{reclamoData.titulo}</Text>
-                  
-                  <ImagenesReclamo 
-                    imagenes={reclamoData.imagenes}
-                    onImagePress={setImagenSeleccionada}
-                  />
-                  
-                  <Text style={styles.description}>{reclamoData.descripcion}</Text>
-                  
-                  <InfoRow
-                    iconName="format-list-bulleted"
-                    label="Categoría"
-                    value={getIncidentes(reclamoData.categoria)}
-                  />
-                  <InfoRow
-                    iconName="progress-check"
-                    label="Estado"
-                    value={getEstado(reclamoData.estado)}
-                  />
-                  <InfoRow
-                    iconName="calendar-range"
-                    label="Fecha de Creación"
-                    value={new Date(reclamoData.fecha_creacion).toLocaleDateString()}
-                  />
-                  <InfoRow
-                    iconName="star-outline"
-                    label="Calificación Promedio"
-                    value={Number(reclamoData.promedio_calificacion).toFixed(1)}
-                  />
-                  <InfoRow
-                    iconName="shield-check-outline"
-                    label="Confiabilidad"
-                    value={`${Number(reclamoData.confiabilidad_calculada).toFixed(0)} %`}
-                  />
+                <View style={styles.scrollButtonContainer}>
+                  <TouchableOpacity onPress={handleScrollToTop} style={styles.scrollButton}>
+                    <Icon name="arrow-up" type="material-community" color="#fff" size={28}/>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleScrollToBottom} style={styles.scrollButton}>
+                    <Icon name="arrow-down" type="material-community" color="#fff" size={28}/>
+                  </TouchableOpacity>
                 </View>
               )}
-
-              {/* VISTA 2: SEGUIMIENTO */}
-              {activeTab === 'historial' && (
-                <DetalleHistorialTab reclamo={reclamoData} />
-              )}
-
-            </ScrollView>
+            </>
           ) : (
              <View style={styles.inlineLoadingContainer}>
                  <ActivityIndicator size="small" color="#00a680" />
